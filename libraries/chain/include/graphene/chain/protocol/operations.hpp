@@ -39,6 +39,9 @@
 #include <graphene/chain/protocol/witness.hpp>
 #include <graphene/chain/protocol/worker.hpp>
 
+//EnDo classes
+#include <graphene/chain/protocol/institution.hpp>
+
 namespace graphene { namespace chain {
 
    /**
@@ -93,8 +96,10 @@ namespace graphene { namespace chain {
             asset_claim_fees_operation,
             fba_distribute_operation,       // VIRTUAL
             bid_collateral_operation,
-            execute_bid_operation           // VIRTUAL
-         > operation;
+            execute_bid_operation,           // VIRTUAL
+            // EnDo operations
+            institution_create_operation
+   > operation;
 
    /// @} // operations group
 

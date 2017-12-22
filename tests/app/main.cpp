@@ -45,13 +45,13 @@ BOOST_AUTO_TEST_CASE( two_node_network )
    using namespace graphene::chain;
    using namespace graphene::app;
    try {
-      BOOST_TEST_MESSAGE( "Creating temporary files" );
+      BOOST_TEST_MESSAGE( "Creating ENDO temporary files" );
 
       fc::temp_directory app_dir( graphene::utilities::temp_directory_path() );
       fc::temp_directory app2_dir( graphene::utilities::temp_directory_path() );
       fc::temp_file genesis_json;
 
-      BOOST_TEST_MESSAGE( "Creating and initializing app1" );
+      BOOST_TEST_MESSAGE( "Creating and initializing ENDO app1" );
 
       graphene::app::application app1;
       app1.register_plugin<graphene::account_history::account_history_plugin>();
@@ -59,7 +59,7 @@ BOOST_AUTO_TEST_CASE( two_node_network )
       cfg.emplace("p2p-endpoint", boost::program_options::variable_value(string("127.0.0.1:3939"), false));
       app1.initialize(app_dir.path(), cfg);
 
-      BOOST_TEST_MESSAGE( "Creating and initializing app2" );
+      BOOST_TEST_MESSAGE( "Creating and initializing ENDO app2" );
 
       graphene::app::application app2;
       app2.register_plugin<account_history::account_history_plugin>();

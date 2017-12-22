@@ -41,6 +41,9 @@
 #include <graphene/chain/worker_object.hpp>
 #include <graphene/chain/witness_object.hpp>
 
+// EnDo objects
+#include <graphene/chain/institution_object.hpp>
+
 #include <graphene/market_history/market_history_plugin.hpp>
 
 #include <fc/api.hpp>
@@ -605,6 +608,13 @@ class database_api
        */
       vector<blinded_balance_object> get_blinded_balances( const flat_set<commitment_type>& commitments )const;
 
+//      vector<institution_object> get_institutions();
+      optional<institution_object> get_institution()const;
+
+//    institution_id_type stop  = institution_id_type(),
+//    unsigned limit = 100,
+//            institution_id_type start = institution_id_type()
+
    private:
       std::shared_ptr< database_api_impl > my;
 };
@@ -714,4 +724,7 @@ FC_API(graphene::app::database_api,
 
    // Blinded balances
    (get_blinded_balances)
+
+//           (get_institutions)
+           (get_institution)
 )

@@ -10,6 +10,10 @@
 #include <graphene/chain/market_object.hpp>
 #include <graphene/chain/committee_member_object.hpp>
 
+// EnDo object
+#include <graphene/chain/institution_object.hpp>
+
+
 using namespace fc;
 using namespace graphene::chain;
 
@@ -194,6 +198,9 @@ struct get_impacted_account_visitor
       _impacted.insert( op.account_id );
    }
 
+   // EnDo operations
+   void operator()( const institution_create_operation& op ) {}
+
 };
 
 static void operation_get_impacted_accounts( const operation& op, flat_set<account_id_type>& result )
@@ -281,6 +288,11 @@ static void get_relevant_accounts( const object* obj, flat_set<account_id_type>&
            break;
         } case balance_object_type:{
            /** these are free from any accounts */
+           break;
+        } case institution_object_type:{ // TODO: upd ?
+           const auto& aobj = dynamic_cast<const worker_object*>(obj);
+           assert( aobj != nullptr );
+           accounts.insert( aobj->worker_account );
            break;
         }
       }

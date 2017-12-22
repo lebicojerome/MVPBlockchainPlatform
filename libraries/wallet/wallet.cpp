@@ -1566,6 +1566,41 @@ public:
       return sign_transaction( tx, broadcast );
    }
 
+   template<typename InstitutionInit>
+   static InstitutionInit _create_institution_initializer( const variant& institution_settings )
+   {
+      InstitutionInit result;
+       from_variant( institution_settings, result );
+      return result;
+   }
+
+   signed_transaction institution_create(
+     string creator,
+     string name,
+     string short_name,
+     string phone,
+     string address,
+//     graphene::chain::institution_customs customs,
+     bool broadcast
+   ) {
+      FC_ASSERT( !is_locked() );
+
+      institution_create_operation op;
+      op.owner = get_account( creator ).id;
+      op.name = name;
+      op.short_name = short_name;
+      op.phone = phone;
+      op.address = address;
+//      op.customs = customs;
+
+      signed_transaction tx;
+      tx.operations.push_back( op );
+      set_operation_fees( tx, _remote_db->get_global_properties().parameters.current_fees );
+      tx.validate();
+
+      return sign_transaction( tx, broadcast );
+   }
+
    signed_transaction update_worker_votes(
       string account,
       worker_vote_delta delta,
@@ -1882,7 +1917,8 @@ public:
                                  string symbol_to_sell,
                                  string min_to_receive,
                                  string symbol_to_receive,
-                                 uint32_t timeout_sec = 0,
+                                 uint32_t
+                                 timeout_sec = 0,
                                  bool   fill_or_kill = false,
                                  bool   broadcast = false)
    {
@@ -2867,6 +2903,14 @@ brain_key_info wallet_api::suggest_brain_key()const
    result.wif_priv_key = key_to_wif( priv_key );
    result.pub_key = priv_key.get_public_key();
    return result;
+}
+
+pair<public_key_type,string> wallet_api::get_private_key_from_password( string account, string role, string password )const {
+   auto seed = password + account + role;
+   FC_ASSERT( seed.size() );
+   auto secret = fc::sha256::hash( seed.c_str(), seed.size() );
+   auto priv = fc::ecc::private_key::regenerate( secret );
+   return std::make_pair( public_key_type( priv.get_public_key() ), key_to_wif( priv ) );
 }
 
 vector<brain_key_info> wallet_api::derive_owner_keys_from_brain_key(string brain_key, int number_of_desired_keys) const
@@ -4308,6 +4352,11 @@ vector<blind_receipt> wallet_api::blind_history( string key_or_account )
    }
    std::sort( result.begin(), result.end(), [&]( const blind_receipt& a, const blind_receipt& b ){ return a.date > b.date; } );
    return result;
+}
+
+signed_transaction wallet_api::institution_create( string creator, string name, string short_name, string phone, string address, bool broadcast )
+{
+   return my->institution_create( creator, name, short_name, phone, address, broadcast );
 }
 
 order_book wallet_api::get_order_book( const string& base, const string& quote, unsigned limit )

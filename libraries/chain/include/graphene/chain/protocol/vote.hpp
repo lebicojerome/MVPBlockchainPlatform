@@ -64,7 +64,10 @@ struct vote_id_type
       committee,
       witness,
       worker,
-      VOTE_TYPE_COUNT
+      VOTE_TYPE_COUNT,
+
+      // EnDo vote types
+      institution
    };
 
    /// Default constructor. Sets type and instance to 0

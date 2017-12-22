@@ -46,6 +46,9 @@
 #include <graphene/chain/witness_object.hpp>
 #include <graphene/chain/worker_object.hpp>
 
+//EnDo objects
+#include <graphene/chain/institution_object.hpp>
+
 namespace graphene { namespace chain {
 
 template<class Index>

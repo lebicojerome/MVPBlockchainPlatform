@@ -24,6 +24,8 @@
 
 #include <graphene/app/database_api.hpp>
 #include <graphene/chain/get_config.hpp>
+#include <graphene/chain/institution_object.hpp>
+#include <graphene/chain/account_object.hpp>
 
 #include <fc/bloom_filter.hpp>
 #include <fc/smart_ref_impl.hpp>
@@ -150,6 +152,10 @@ class database_api_impl : public std::enable_shared_from_this<database_api_impl>
 
       // Blinded balances
       vector<blinded_balance_object> get_blinded_balances( const flat_set<commitment_type>& commitments )const;
+
+      // Institutions
+//      vector<institution_object> get_institutions(institution_id_type stop, unsigned limit, institution_id_type start);
+      optional<institution_object> get_institution()const;
 
 
    //private:
@@ -1585,6 +1591,9 @@ vector<variant> database_api_impl::lookup_vote_ids( const vector<vote_id_type>& 
    const auto& for_worker_idx = _db.get_index_type<worker_index>().indices().get<by_vote_for>();
    const auto& against_worker_idx = _db.get_index_type<worker_index>().indices().get<by_vote_against>();
 
+   // EnDo objects
+   //const auto& institution_idx = _db.get_index_type<institution_index>().indices().get<by_vote_id>();
+
    vector<variant> result;
    result.reserve( votes.size() );
    for( auto id : votes )
@@ -1609,6 +1618,8 @@ vector<variant> database_api_impl::lookup_vote_ids( const vector<vote_id_type>& 
                result.emplace_back( variant() );
             break;
          }
+         case vote_id_type::institution:
+             return result; // TODO:: upd
          case vote_id_type::worker:
          {
             auto itr = for_worker_idx.find( id );
@@ -1916,6 +1927,32 @@ vector<blinded_balance_object> database_api_impl::get_blinded_balances( const fl
          result.push_back( *itr );
    }
    return result;
+}
+
+//////////////////////////////////////////////////////////////////////
+//                                                                  //
+// Institution methods                                              //
+//                                                                  //
+//////////////////////////////////////////////////////////////////////
+
+//institution_id_type stop, unsigned limit, institution_id_type start
+optional<institution_object> database_api::get_institution()const
+{
+    return my->get_institution();
+}
+
+optional<institution_object> database_api_impl::get_institution()const
+{
+    institution_object result;
+//    const auto& institution_idx = _db.get_index_type<institution_index>().indices().get<by_id>();
+//    for (auto elem: institution_idx) {
+//        if( result.size() >= limit ) break;
+//        if( ( (elem.get_id().instance.value <= start.instance.value)) &&
+//            ( (elem.get_id().instance.value >=  stop.instance.value)))
+//            result.push_back( elem );
+//    }
+
+    return result;
 }
 
 //////////////////////////////////////////////////////////////////////

@@ -612,6 +612,11 @@ class wallet_api
        */
       brain_key_info suggest_brain_key()const;
 
+      /**
+        *  @param role - active | owner | memo
+        */
+      pair<public_key_type,string>  get_private_key_from_password( string account, string role, string password )const;
+
      /**
       * Derive any number of *possible* owner keys from a given brain key.
       *
@@ -820,6 +825,8 @@ class wallet_api
        * @return all blind receipts to/form a particular account
        */
       vector<blind_receipt> blind_history( string key_or_account );
+
+      signed_transaction institution_create( string creator, string name, string short_name, string phone, string address, bool broadcast );
 
       /**
        *  Given a confirmation receipt, this method will parse it for a blinded balance and confirm
@@ -1643,6 +1650,7 @@ FC_API( graphene::wallet::wallet_api,
         (import_account_keys)
         (import_balance)
         (suggest_brain_key)
+        (get_private_key_from_password)
         (derive_owner_keys_from_brain_key)
         (register_account)
         (upgrade_account)
@@ -1731,4 +1739,6 @@ FC_API( graphene::wallet::wallet_api,
         (blind_history)
         (receive_blind_transfer)
         (get_order_book)
+
+        (institution_create)
       )
