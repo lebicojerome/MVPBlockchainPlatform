@@ -112,6 +112,11 @@ namespace graphene { namespace chain {
          void  adjust_balance(const asset& delta);
    };
 
+//   struct account_hold_object
+//   {
+//      share_type     amount;
+//      time_point_sec expired_at;
+//   };
 
    /**
     * @brief This class represents an account on the object graph
@@ -226,6 +231,8 @@ namespace graphene { namespace chain {
           * In the future we may expand this to allow accounts to e.g. voluntarily restrict incoming transfers.
           */
          optional< flat_set<asset_id_type> > allowed_assets;
+
+         vector<account_hold_object>   hold_objects;
 
          bool has_special_authority()const
          {
@@ -379,6 +386,7 @@ FC_REFLECT_DERIVED( graphene::chain::account_object,
                     (owner_special_authority)(active_special_authority)
                     (top_n_control_flags)
                     (allowed_assets)
+                    (hold_objects)
                     )
 
 FC_REFLECT_DERIVED( graphene::chain::account_balance_object,

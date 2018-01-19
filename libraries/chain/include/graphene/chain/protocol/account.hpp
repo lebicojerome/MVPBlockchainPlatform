@@ -60,6 +60,13 @@ namespace graphene { namespace chain {
       void validate()const;
    };
 
+   struct account_hold_object
+   {
+      asset       amount;
+      uint64_t       publishing_count;
+      time_point_sec expired_at;
+   };
+
    /**
     *  @ingroup operations
     */
@@ -261,6 +268,52 @@ namespace graphene { namespace chain {
       void        validate()const;
    };
 
+   struct account_hold_balance_operation : public base_operation
+   {
+
+      struct fee_parameters_type { uint64_t fee = GRAPHENE_BLOCKCHAIN_PRECISION / 100; };
+
+      asset                         fee;
+      account_id_type               account;
+      vector<account_hold_object>   hold_objects;
+      uint64_t                      new_hold_object_amount;
+      asset                         amount;
+
+      account_id_type fee_payer()const { return account; }
+      void       validate()const;
+   };
+
+   struct document_hold_publishing_operation : public base_operation
+   {
+      struct fee_parameters_type {
+          uint64_t fee = ENDO_DOCUMENT_PUBLISHED_FEE;
+      };
+
+      asset                         fee;
+      account_id_type               owner;
+      document_id_type              document;
+      uint8_t                       status;
+      asset                         amount;
+      vector<account_hold_object>   hold_objects;
+
+
+      account_id_type               fee_payer()const { return owner; }
+      void                          validate()const;
+   };
+
+   struct account_returning_holding_tokens_operation : public base_operation
+   {
+
+      struct fee_parameters_type { uint64_t fee = GRAPHENE_BLOCKCHAIN_PRECISION / 100; };
+
+      asset                         fee;
+      account_id_type               account;
+      vector<account_hold_object>   hold_objects;
+
+      account_id_type fee_payer()const { return account; }
+      void       validate()const;
+   };
+
 } } // graphene::chain
 
 FC_REFLECT(graphene::chain::account_options, (memo_key)(voting_account)(num_witness)(num_committee)(votes)(extensions))
@@ -291,3 +344,24 @@ FC_REFLECT( graphene::chain::account_upgrade_operation::fee_parameters_type, (me
 FC_REFLECT( graphene::chain::account_transfer_operation::fee_parameters_type, (fee) )
 
 FC_REFLECT( graphene::chain::account_transfer_operation, (fee)(account_id)(new_owner)(extensions) )
+
+FC_REFLECT( graphene::chain::account_hold_object, (publishing_count)(amount)(expired_at) )
+FC_REFLECT( graphene::chain::account_hold_balance_operation::fee_parameters_type, (fee) )
+FC_REFLECT( graphene::chain::account_hold_balance_operation, (fee)(account)(hold_objects)(new_hold_object_amount)(amount) )
+
+FC_REFLECT( graphene::chain::document_hold_publishing_operation::fee_parameters_type, (fee) )
+FC_REFLECT( graphene::chain::document_hold_publishing_operation,
+   (fee)
+   (owner)
+   (document)
+   (status)
+   (amount)
+   (hold_objects)
+)
+
+FC_REFLECT( graphene::chain::account_returning_holding_tokens_operation::fee_parameters_type, (fee) )
+FC_REFLECT( graphene::chain::account_returning_holding_tokens_operation,
+   (fee)
+   (account)
+   (hold_objects)
+)

@@ -41,6 +41,7 @@
 
 //EnDo classes
 #include <graphene/chain/protocol/institution.hpp>
+#include <graphene/chain/protocol/document.hpp>
 
 namespace graphene { namespace chain {
 
@@ -98,7 +99,16 @@ namespace graphene { namespace chain {
             bid_collateral_operation,
             execute_bid_operation,           // VIRTUAL
             // EnDo operations
-            institution_create_operation
+            institution_create_operation,
+            institution_update_operation,
+            document_create_operation,
+            document_update_operation,
+            document_confirming_operation,
+            document_publishing_operation,
+            document_annuling_operation,
+            account_hold_balance_operation,
+            account_returning_holding_tokens_operation,
+            document_hold_publishing_operation
    > operation;
 
    /// @} // operations group

@@ -39,6 +39,7 @@
 
 // EnDo evaluators
 #include <graphene/chain/institution_evaluator.hpp>
+#include <graphene/chain/document_evaluator.hpp>
 
 #include <fc/smart_ref_impl.hpp>
 

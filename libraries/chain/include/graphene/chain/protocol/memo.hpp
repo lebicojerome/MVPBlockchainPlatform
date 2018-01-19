@@ -85,7 +85,20 @@ namespace graphene { namespace chain {
       static memo_message deserialize(const string& serial);
    };
 
+   struct memo_endo
+   {
+      uint64_t nonce = 0;
+
+      vector<char> encoded_message;
+      std::string  decoded_message;
+
+      void        set_message(const string& priv, const string& msg, uint64_t custom_nonce = 0);
+
+      void        get_message(const string& priv);
+   };
+
 } } // namespace graphene::chain
 
 FC_REFLECT( graphene::chain::memo_message, (checksum)(text) )
 FC_REFLECT( graphene::chain::memo_data, (from)(to)(nonce)(message) )
+FC_REFLECT( graphene::chain::memo_endo, (nonce)(encoded_message)(decoded_message) )

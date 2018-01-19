@@ -67,7 +67,8 @@ struct vote_id_type
       VOTE_TYPE_COUNT,
 
       // EnDo vote types
-      institution
+      institution,
+      document
    };
 
    /// Default constructor. Sets type and instance to 0
@@ -151,5 +152,9 @@ void from_variant( const fc::variant& var, graphene::chain::vote_id_type& vo );
 
 FC_REFLECT_TYPENAME( fc::flat_set<graphene::chain::vote_id_type> )
 
-FC_REFLECT_ENUM( graphene::chain::vote_id_type::vote_type, (witness)(committee)(worker)(VOTE_TYPE_COUNT) )
+FC_REFLECT_ENUM( graphene::chain::vote_id_type::vote_type, (witness)(committee)(worker)(VOTE_TYPE_COUNT)
+//EnDo reflect
+(institution)
+(document)
+)
 FC_REFLECT( graphene::chain::vote_id_type, (content) )

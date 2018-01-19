@@ -12,6 +12,7 @@
 
 // EnDo object
 #include <graphene/chain/institution_object.hpp>
+#include <graphene/chain/document_object.hpp>
 
 
 using namespace fc;
@@ -200,6 +201,15 @@ struct get_impacted_account_visitor
 
    // EnDo operations
    void operator()( const institution_create_operation& op ) {}
+   void operator()( const institution_update_operation& op ) {}
+   void operator()( const document_create_operation& op ) {}
+   void operator()( const document_update_operation& op ) {}
+   void operator()( const document_confirming_operation& op ) {}
+   void operator()( const document_publishing_operation& op ) {}
+   void operator()( const document_annuling_operation& op ) {}
+   void operator()( const account_hold_balance_operation& op ) {}
+   void operator()( const account_returning_holding_tokens_operation& op ) {}
+   void operator()( const document_hold_publishing_operation& op ) {}
 
 };
 
@@ -289,10 +299,16 @@ static void get_relevant_accounts( const object* obj, flat_set<account_id_type>&
         } case balance_object_type:{
            /** these are free from any accounts */
            break;
+      // EnDo case
         } case institution_object_type:{ // TODO: upd ?
-           const auto& aobj = dynamic_cast<const worker_object*>(obj);
+           const auto& aobj = dynamic_cast<const institution_object*>(obj);
            assert( aobj != nullptr );
-           accounts.insert( aobj->worker_account );
+           accounts.insert( aobj->owner );
+           break;
+        } case document_object_type:{ // TODO: upd ?
+           const auto& aobj = dynamic_cast<const document_object*>(obj);
+           assert( aobj != nullptr );
+           accounts.insert( aobj->owner );
            break;
         }
       }

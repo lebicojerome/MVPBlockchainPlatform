@@ -43,6 +43,7 @@
 
 // EnDo objects
 #include <graphene/chain/institution_object.hpp>
+#include <graphene/chain/document_object.hpp>
 
 #include <graphene/market_history/market_history_plugin.hpp>
 
@@ -260,7 +261,7 @@ class database_api
        */
       std::map<string,full_account> get_full_accounts( const vector<string>& names_or_ids, bool subscribe );
 
-      optional<account_object> get_account_by_name( string name )const;
+      account_object get_account_by_name( string name )const;
 
       /**
        *  @return all accounts that referr to the key or account id in their owner or active authorities.
@@ -609,7 +610,12 @@ class database_api
       vector<blinded_balance_object> get_blinded_balances( const flat_set<commitment_type>& commitments )const;
 
 //      vector<institution_object> get_institutions();
-      optional<institution_object> get_institution()const;
+      vector<optional<institution_object>> get_institutions()const;
+      institution_object get_institution(const object_id_type id)const;
+      vector<optional<institution_object>> get_institutions_of_account(const vector<object_id_type>& ids, string account_name)const;
+
+      vector<optional<document_object>> get_documents()const;
+      document_object get_document(const object_id_type id, string code)const;
 
 //    institution_id_type stop  = institution_id_type(),
 //    unsigned limit = 100,
@@ -725,6 +731,11 @@ FC_API(graphene::app::database_api,
    // Blinded balances
    (get_blinded_balances)
 
-//           (get_institutions)
-           (get_institution)
+//   (get_institutions)
+   (get_institutions)
+   (get_institution)
+   (get_institutions_of_account)
+
+   (get_documents)
+   (get_document)
 )

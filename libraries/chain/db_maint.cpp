@@ -48,6 +48,7 @@
 
 //EnDo objects
 #include <graphene/chain/institution_object.hpp>
+#include <graphene/chain/document_object.hpp>
 
 namespace graphene { namespace chain {
 

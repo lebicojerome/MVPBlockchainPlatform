@@ -49,6 +49,7 @@
 
 // EnDo objects
 #include <graphene/chain/institution_object.hpp>
+#include <graphene/chain/document_object.hpp>
 
 #include <graphene/chain/account_evaluator.hpp>
 #include <graphene/chain/asset_evaluator.hpp>
@@ -67,6 +68,7 @@
 
 // EnDo evaluators
 #include <graphene/chain/institution_evaluator.hpp>
+#include <graphene/chain/document_evaluator.hpp>
 
 #include <graphene/chain/protocol/fee_schedule.hpp>
 
@@ -136,6 +138,9 @@ const uint8_t worker_object::type_id;
 const uint8_t institution_object::space_id;
 const uint8_t institution_object::type_id;
 
+const uint8_t document_object::space_id;
+const uint8_t document_object::type_id;
+
 
 void database::initialize_evaluators()
 {
@@ -144,6 +149,9 @@ void database::initialize_evaluators()
    register_evaluator<account_update_evaluator>();
    register_evaluator<account_upgrade_evaluator>();
    register_evaluator<account_whitelist_evaluator>();
+   register_evaluator<account_hold_balance_evaluator>();
+   register_evaluator<account_returning_holding_tokens_evaluator>();
+   register_evaluator<document_hold_publishing_evaluator>();
    register_evaluator<committee_member_create_evaluator>();
    register_evaluator<committee_member_update_evaluator>();
    register_evaluator<committee_member_update_global_parameters_evaluator>();
@@ -185,6 +193,12 @@ void database::initialize_evaluators()
 
    // EnDo register evaluators
    register_evaluator<institution_create_evaluator>();
+   register_evaluator<institution_update_evaluator>();
+   register_evaluator<document_create_evaluator>();
+   register_evaluator<document_update_evaluator>();
+   register_evaluator<document_confirming_evaluator>();
+   register_evaluator<document_publishing_evaluator>();
+   register_evaluator<document_annuling_evaluator>();
 
 }
 
@@ -217,6 +231,7 @@ void database::initialize_indexes()
 
    // EnDo indexes
    add_index< primary_index<institution_index> >();
+   add_index< primary_index<document_index> >();
 
    //Implementation object indexes
    add_index< primary_index<transaction_index                             > >();

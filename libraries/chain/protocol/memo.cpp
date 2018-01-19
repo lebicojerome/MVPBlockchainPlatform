@@ -87,4 +87,20 @@ memo_message memo_message::deserialize(const string& serial)
    return result;
 }
 
+void memo_endo::set_message(const string& priv, const string& msg, uint64_t custom_nonce)
+{
+   auto nonce_plus_secret = fc::sha512::hash(fc::to_string(custom_nonce) + priv);
+   string text = memo_message(digest_type::hash(msg)._hash[0], msg).serialize();
+   encoded_message = fc::aes_encrypt( nonce_plus_secret, vector<char>(text.begin(), text.end()) );
+}
+
+void memo_endo::get_message(const string& priv)
+{
+   auto nonce_plus_secret = fc::sha512::hash(fc::to_string(nonce) + priv);
+   auto plain_text = fc::aes_decrypt( nonce_plus_secret, encoded_message );
+   auto result = memo_message::deserialize(string(plain_text.begin(), plain_text.end()));
+   FC_ASSERT( result.checksum == uint32_t(digest_type::hash(result.text)._hash[0]) );
+   decoded_message = result.text;
+}
+
 } } // graphene::chain

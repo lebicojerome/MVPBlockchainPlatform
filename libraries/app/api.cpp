@@ -39,6 +39,7 @@
 
 // EnDo object
 #include <graphene/chain/institution_object.hpp>
+#include <graphene/chain/document_object.hpp>
 
 #include <fc/crypto/hex.hpp>
 #include <fc/smart_ref_impl.hpp>

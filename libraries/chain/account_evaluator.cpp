@@ -36,6 +36,7 @@
 #include <graphene/chain/special_authority_object.hpp>
 #include <graphene/chain/witness_object.hpp>
 #include <graphene/chain/worker_object.hpp>
+#include <graphene/chain/document_object.hpp>
 
 #include <algorithm>
 
@@ -429,5 +430,104 @@ void_result account_upgrade_evaluator::do_apply(const account_upgrade_evaluator:
 
    return {};
 } FC_RETHROW_EXCEPTIONS( error, "Unable to upgrade account '${a}'", ("a",o.account_to_upgrade(db()).name) ) }
+
+void_result account_hold_balance_evaluator::do_evaluate(const account_hold_balance_evaluator::operation_type& o)
+{ try {
+   return void_result();
+} FC_CAPTURE_AND_RETHROW( (o) ) }
+
+void_result account_hold_balance_evaluator::do_apply(const account_hold_balance_evaluator::operation_type& o)
+{ try {
+   database& d = db();
+   const time_point_sec now = d.head_block_time();
+      ilog( "EnDo log ${a}",
+            ("a", o.hold_objects) );
+//      FC_ASSERT(false, "Could");
+
+   d.adjust_balance( o.account, -o.amount );
+   d.modify(d.get(o.account), [&](account_object& a) {
+       vector<account_hold_object> hold_objects;
+       hold_objects = o.hold_objects;
+       account_hold_object new_hold_obj;
+       new_hold_obj.publishing_count = o.new_hold_object_amount;
+       new_hold_obj.amount = o.amount;
+//       new_hold_obj.expired_at = now + fc::days(30); // TODO:::
+       new_hold_obj.expired_at = now + fc::minutes(3);
+
+       hold_objects.push_back(new_hold_obj);
+       a.hold_objects = hold_objects;
+   });
+
+   return void_result();
+} FC_CAPTURE_AND_RETHROW( (o) ) }
+
+void_result document_hold_publishing_evaluator::do_evaluate(const document_hold_publishing_evaluator::operation_type& o)
+{ try {
+
+   return void_result();
+} FC_CAPTURE_AND_RETHROW( (o) ) }
+
+
+void_result document_hold_publishing_evaluator::do_apply(const document_hold_publishing_evaluator::operation_type& o)
+{ try {
+   database& d = db();
+   bool hold_flag = false;
+   if(o.hold_objects.size() > 0) {
+      vector<account_hold_object> new_hold_objects;
+      for( const account_hold_object& hold_object : o.hold_objects ) {
+         auto insert_ho = hold_object;
+         if(!hold_flag && insert_ho.publishing_count > 0 && insert_ho.expired_at > d.head_block_time()) {
+            hold_flag = true;
+            insert_ho.publishing_count--;
+         }
+
+         new_hold_objects.push_back(insert_ho);
+      }
+      if(hold_flag) {
+         d.modify( d.get(o.owner), [&](account_object &a) {
+            a.hold_objects = new_hold_objects;
+         });
+      }
+   }
+
+   d.modify( d.get(o.document), [&]( document_object& w ) {
+       w.status = o.status;
+   });
+
+   if(!hold_flag)
+      d.adjust_balance( o.owner, -o.amount );
+   return void_result();
+} FC_CAPTURE_AND_RETHROW( (o) ) }
+
+void_result account_returning_holding_tokens_evaluator::do_evaluate(const account_returning_holding_tokens_evaluator::operation_type& o)
+{ try {
+   return void_result();
+} FC_CAPTURE_AND_RETHROW( (o) ) }
+
+void_result account_returning_holding_tokens_evaluator::do_apply(const account_returning_holding_tokens_evaluator::operation_type& o)
+{ try {
+   database& d = db();
+   bool hold_flag = false;
+   asset returning_count = asset(0);
+   if(o.hold_objects.size() > 0) {
+      vector<account_hold_object> new_hold_objects;
+      for( const account_hold_object& hold_object : o.hold_objects ) {
+         auto insert_ho = hold_object;
+         if(insert_ho.expired_at <= d.head_block_time()) {
+            hold_flag = true;
+            returning_count += insert_ho.amount;
+         } else
+            new_hold_objects.push_back(insert_ho);
+
+      }
+      FC_ASSERT( hold_flag );
+      d.modify( d.get(o.account), [&](account_object &a) {
+          a.hold_objects = new_hold_objects;
+      });
+   }
+   FC_ASSERT( returning_count > asset(0) );
+   d.adjust_balance( o.account, returning_count );
+   return void_result();
+} FC_CAPTURE_AND_RETHROW( (o) ) }
 
 } } // graphene::chain

@@ -169,6 +169,11 @@ void account_options::validate() const
               "May not specify fewer witnesses or committee members than the number voted for.");
 }
 
+//void account_hold_object::validate() const
+//{
+//
+//}
+
 share_type account_create_operation::calculate_fee( const fee_parameters_type& k )const
 {
    auto core_fee_required = k.basic_fee;
@@ -281,5 +286,21 @@ void account_transfer_operation::validate()const
    FC_ASSERT( fee.amount >= 0 );
 }
 
+void account_hold_balance_operation::validate()const
+{
+   FC_ASSERT( fee.amount >= 0 );
+//   FC_ASSERT( new_hold_object_amount >= 100 ); // TODO:::
+}
+
+void account_returning_holding_tokens_operation::validate()const
+{
+  FC_ASSERT( fee.amount >= 0 );
+  FC_ASSERT( hold_objects.size() > 0 );
+}
+
+void document_hold_publishing_operation::validate()const
+{
+  FC_ASSERT( fee.amount >= 0 );
+}
 
 } } // graphene::chain

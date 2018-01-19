@@ -457,6 +457,11 @@ class wallet_api
        */
       string                            get_private_key( public_key_type pubkey )const;
 
+      /*/**
+      *  @param role - active | owner | memo
+      *
+      pair<public_key_type,string>      get_private_key_from_password( string account, string role, string password )const;*/
+
       /**
        * @ingroup Transaction Builder API
        */
@@ -612,11 +617,6 @@ class wallet_api
        */
       brain_key_info suggest_brain_key()const;
 
-      /**
-        *  @param role - active | owner | memo
-        */
-      pair<public_key_type,string>  get_private_key_from_password( string account, string role, string password )const;
-
      /**
       * Derive any number of *possible* owner keys from a given brain key.
       *
@@ -626,7 +626,7 @@ class wallet_api
       * @see suggest_brain_key()
       *
       * @param brain_key    Brain key
-      * @param numberOfDesiredKeys  Number of desired keys
+      * @param number_of_desired_keys  Number of desired keys
       * @return A list of keys that are deterministically derived from the brainkey
       */
      vector<brain_key_info> derive_owner_keys_from_brain_key(string brain_key, int number_of_desired_keys = 1) const;
@@ -814,11 +814,11 @@ class wallet_api
        */
       vector<asset>                get_blind_balances( string key_or_label );
       /** @return all blind accounts */
-      map<string,public_key_type> get_blind_accounts()const;
+      map<string,public_key_type>  get_blind_accounts()const;
       /** @return all blind accounts for which this wallet has the private key */
-      map<string,public_key_type> get_my_blind_accounts()const;
+      map<string,public_key_type>  get_my_blind_accounts()const;
       /** @return the public key associated with the given label */
-      public_key_type             get_public_key( string label )const;
+      public_key_type              get_public_key( string label )const;
       ///@}
 
       /**
@@ -826,7 +826,61 @@ class wallet_api
        */
       vector<blind_receipt> blind_history( string key_or_account );
 
-      signed_transaction institution_create( string creator, string name, string short_name, string phone, string address, bool broadcast );
+      signed_transaction institution_create( string creator, string short_name, string name, string phone, string address, string customs, vector<string> admins, bool broadcast );
+      signed_transaction institution_update( string creator, object_id_type id, string short_name, string name, string phone, string address, string customs, vector<string> admins, bool broadcast );
+
+      signed_transaction document_create(
+            string                   owner_name,
+            time_point_sec           issue_date,
+            time_point_sec           expiry_date,
+            string                   first_name,
+            string                   last_name,
+            string                   middle_name,
+            time_point_sec           birth_date,
+            string                   document_name,
+            string                   phone,
+            string                   email,
+            string                   identity_card_number,
+            string                   identity_card_type_name,
+            institution_id_type      institution_id,
+            string                   text,
+            string                   public_custom,
+            string                   hidden_custom,
+            vector<string>           confirming_admins,
+            string                   private_data,
+            string                   code,
+            bool                     broadcast
+      );
+
+      signed_transaction document_update(
+            object_id_type           id,
+            string                   owner_name,
+            time_point_sec           issue_date,
+            time_point_sec           expiry_date,
+            string                   first_name,
+            string                   last_name,
+            string                   middle_name,
+            time_point_sec           birth_date,
+            string                   document_name,
+            string                   phone,
+            string                   email,
+            string                   identity_card_number,
+            string                   identity_card_type_name,
+            institution_id_type      institution_id,
+            string                   text,
+            string                   public_custom,
+            string                   hidden_custom,
+            vector<string>           confirming_admins,
+            string                   private_data,
+            string                   code,
+            bool                     broadcast
+      );
+
+      signed_transaction document_confirming(object_id_type id, string admin_name);
+      signed_transaction document_publishing(object_id_type id, string owner_name);
+      signed_transaction document_annuling(object_id_type id, string owner_name);
+      signed_transaction returning_tokens(string owner_name);
+      signed_transaction holding_tokens(string amount, string owner_name);
 
       /**
        *  Given a confirmation receipt, this method will parse it for a blinded balance and confirm
@@ -1650,7 +1704,6 @@ FC_API( graphene::wallet::wallet_api,
         (import_account_keys)
         (import_balance)
         (suggest_brain_key)
-        (get_private_key_from_password)
         (derive_owner_keys_from_brain_key)
         (register_account)
         (upgrade_account)
@@ -1741,4 +1794,13 @@ FC_API( graphene::wallet::wallet_api,
         (get_order_book)
 
         (institution_create)
+        (institution_update)
+
+        (document_create)
+        (document_update)
+        (document_confirming)
+        (document_publishing)
+        (document_annuling)
+        (returning_tokens)
+        (holding_tokens)
       )

@@ -213,6 +213,15 @@ struct get_impacted_account_visitor
 
     // EnDo operations
     void operator()( const institution_create_operation& op ) {}
+    void operator()( const institution_update_operation& op ) {}
+    void operator()( const document_create_operation& op ) {}
+    void operator()( const document_update_operation& op ) {}
+    void operator()( const document_confirming_operation& op ) {}
+    void operator()( const document_publishing_operation& op ) {}
+    void operator()( const document_annuling_operation& op ) {}
+    void operator()( const account_hold_balance_operation& op ) {}
+    void operator()( const account_returning_holding_tokens_operation& op ) {}
+    void operator()( const document_hold_publishing_operation& op ) {}
 
 };
 

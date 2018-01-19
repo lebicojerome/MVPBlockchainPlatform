@@ -654,6 +654,16 @@ public:
       return opt_asset[0]->id;
    }
 
+   institution_object get_institution(const object_id_type id, account_id_type account_id) const
+   {
+      auto institution = _remote_db->get_institution( id );
+      account_object account = get_account( account_id );
+      FC_ASSERT( !institution.id.is_null(), "Institution does not exist." );
+      FC_ASSERT( (std::find(std::begin(institution.admins), std::end(institution.admins), account.id) != std::end(institution.admins)) || account.id == institution.owner, "Access denied." );
+
+      return institution;
+   }
+
    string                            get_wallet_filename() const
    {
       return _wallet_filename;
@@ -1532,8 +1542,7 @@ public:
       string url,
       variant worker_settings,
       bool broadcast
-      )
-   {
+   ) {
       worker_initializer init;
       std::string wtype = worker_settings["type"].get_string();
 
@@ -1566,22 +1575,24 @@ public:
       return sign_transaction( tx, broadcast );
    }
 
-   template<typename InstitutionInit>
-   static InstitutionInit _create_institution_initializer( const variant& institution_settings )
-   {
-      InstitutionInit result;
-       from_variant( institution_settings, result );
-      return result;
-   }
+//   // Institutions
+//   template<typename InstitutionInit>
+//   static InstitutionInit _create_institution_initializer( const variant& institution_settings )
+//   {
+//      InstitutionInit result;
+//       from_variant( institution_settings, result );
+//      return result;
+//   }
 
    signed_transaction institution_create(
-     string creator,
-     string name,
-     string short_name,
-     string phone,
-     string address,
-//     graphene::chain::institution_customs customs,
-     bool broadcast
+      string creator,
+      string short_name,
+      string name,
+      string phone,
+      string address,
+      string customs,
+      vector<string> admins,
+      bool broadcast
    ) {
       FC_ASSERT( !is_locked() );
 
@@ -1591,7 +1602,13 @@ public:
       op.short_name = short_name;
       op.phone = phone;
       op.address = address;
-//      op.customs = customs;
+      op.customs = customs;
+
+      vector< account_id_type > admin_ids;
+      for( const string& name : admins )
+         admin_ids.push_back( get_account_id(name) );
+
+      op.admins = admin_ids;
 
       signed_transaction tx;
       tx.operations.push_back( op );
@@ -1601,12 +1618,353 @@ public:
       return sign_transaction( tx, broadcast );
    }
 
+   signed_transaction institution_update(
+      string creator,
+      object_id_type id,
+      string short_name,
+      string name,
+      string phone,
+      string address,
+      string customs,
+      vector<string> admins,
+      bool broadcast
+   ) {
+      FC_ASSERT( !is_locked() );
+
+      auto institution = _remote_db->get_institution( id );
+      FC_ASSERT( !institution.id.is_null(), "Institution does not exist." );
+      FC_ASSERT( get_account( creator ).id == institution.owner, "Access Denied." );
+
+      institution_update_operation op;
+      op.institution = institution.id;
+
+      op.owner = institution.owner;
+      op.name = name;
+      op.short_name = short_name;
+      op.phone = phone;
+      op.address = address;
+      op.customs = customs;
+
+      vector< account_id_type > admin_ids;
+      for( const string& name : admins )
+         admin_ids.push_back( get_account_id(name) );
+
+      op.admins = admin_ids;
+
+      signed_transaction tx;
+      tx.operations.push_back( op );
+      set_operation_fees( tx, _remote_db->get_global_properties().parameters.current_fees );
+      tx.validate();
+
+      return sign_transaction( tx, broadcast );
+   }
+
+   signed_transaction document_create(
+      string                   owner_name,
+      time_point_sec           issue_date,
+      time_point_sec           expiry_date,
+      string                   first_name,
+      string                   last_name,
+      string                   middle_name,
+      time_point_sec           birth_date,
+      string                   document_name,
+      string                   phone,
+      string                   email,
+      string                   identity_card_number,
+      string                   identity_card_type_name,
+      institution_id_type      institution_id,
+      string                   text,
+      string                   public_custom,
+      string                   hidden_custom,
+      vector<string>           confirming_admins,
+      string                   private_data,
+      string                   code,
+      bool                     broadcast
+   ) {
+      FC_ASSERT( !is_locked() );
+
+      auto owner = get_account( owner_name );
+
+      document_create_operation op;
+      op.owner = owner.id;
+
+      auto institution = get_institution(institution_id, owner.id);
+
+      op.issue_date = issue_date;
+      op.expiry_date = expiry_date;
+      op.first_name = first_name;
+      op.last_name = last_name;
+      op.middle_name = middle_name;
+      op.birth_date = birth_date;
+      op.document_name = document_name;
+      op.phone = phone;
+      op.email = email;
+      op.identity_card_number = identity_card_number;
+      op.identity_card_type_name = identity_card_type_name;
+      op.institution = institution.id;
+      op.text = text;
+      op.public_custom = public_custom;
+      op.hidden_custom = hidden_custom;
+
+//      if( private_data.size() ) {
+         op.private_data = memo_endo();
+         op.private_data->set_message(code, private_data);
+//      }
+
+      vector<account_id_type> confirming_admins_ids;
+      for( const string& name : confirming_admins ) {
+         auto account_id = get_account_id(name);
+         FC_ASSERT( (std::find(std::begin(institution.admins), std::end(institution.admins), account_id) != std::end(institution.admins)) || account_id == institution.owner, "Not found admin." );
+         confirming_admins_ids.push_back(account_id);
+      }
+
+      op.confirming_admins = confirming_admins_ids;
+
+      vector<account_id_type> confirmed_admins_ids;
+      op.confirmed_admins = confirmed_admins_ids;
+
+      op.status = confirming_admins_ids.size() > 0 ? document_object_const::document_status_new : document_object_const::document_status_ready;
+
+      signed_transaction tx;
+      tx.operations.push_back( op );
+      set_operation_fees( tx, _remote_db->get_global_properties().parameters.current_fees );
+      tx.validate();
+
+      return sign_transaction( tx, broadcast );
+   }
+
+   signed_transaction document_update(
+      object_id_type           id,
+      string                   owner_name,
+      time_point_sec           issue_date,
+      time_point_sec           expiry_date,
+      string                   first_name,
+      string                   last_name,
+      string                   middle_name,
+      time_point_sec           birth_date,
+      string                   document_name,
+      string                   phone,
+      string                   email,
+      string                   identity_card_number,
+      string                   identity_card_type_name,
+      institution_id_type      institution_id,
+      string                   text,
+      string                   public_custom,
+      string                   hidden_custom,
+      vector<string>           confirming_admins,
+      string                   private_data,
+      string                   code,
+      bool                     broadcast
+   ) {
+      FC_ASSERT( !is_locked() );
+
+      auto owner = get_account( owner_name );
+
+      auto document = _remote_db->get_document( id, "" );
+      FC_ASSERT( !document.id.is_null(), "Document does not exist." );
+      FC_ASSERT( owner.id == document.owner, "Access Denied." );
+      FC_ASSERT( document.status == document_object_const::document_status_new, "Access Denied." );
+
+      auto institution = get_institution(institution_id, owner.id);
+
+      document_update_operation op;
+      op.document = document.id;
+
+      op.owner = owner.id;
+
+      op.issue_date = issue_date;
+      op.expiry_date = expiry_date;
+      op.first_name = first_name;
+      op.last_name = last_name;
+      op.middle_name = middle_name;
+      op.birth_date = birth_date;
+      op.document_name = document_name;
+      op.phone = phone;
+      op.email = email;
+      op.identity_card_number = identity_card_number;
+      op.identity_card_type_name = identity_card_type_name;
+      op.institution = institution.id;
+      op.text = text;
+      op.public_custom = public_custom;
+      op.hidden_custom = hidden_custom;
+
+//      if( private_data.size() ) {
+         op.private_data = memo_endo();
+         op.private_data->set_message(code, private_data);
+//      }
+
+      vector<account_id_type> confirming_admins_ids;
+      for( const string& name : confirming_admins ) {
+         auto account_id = get_account_id(name);
+         FC_ASSERT( (std::find(std::begin(institution.admins), std::end(institution.admins), account_id) != std::end(institution.admins)) || account_id == institution.owner, "Not found admin." );
+         confirming_admins_ids.push_back(account_id);
+      }
+
+      op.confirming_admins = confirming_admins_ids;
+
+      vector<account_id_type> confirmed_admins_ids;
+      op.confirmed_admins = confirmed_admins_ids;
+
+      op.status = confirming_admins_ids.size() > 0 ? document_object_const::document_status_new : document_object_const::document_status_ready;
+
+      signed_transaction tx;
+      tx.operations.push_back( op );
+      set_operation_fees( tx, _remote_db->get_global_properties().parameters.current_fees );
+      tx.validate();
+
+      return sign_transaction( tx, broadcast );
+   }
+
+   signed_transaction document_confirming(object_id_type id, string admin_name)
+   {
+      FC_ASSERT( !is_locked() );
+
+      auto admin = get_account( admin_name );
+
+      auto document = _remote_db->get_document( id, "" );
+      FC_ASSERT( !document.id.is_null() , "Document does not exist." );
+      FC_ASSERT( document.status == document_object_const::document_status_new, "Access Denied." );
+
+      auto institution = get_institution(document.institution, admin.id);
+
+      FC_ASSERT( std::find(std::begin(document.confirming_admins), std::end(document.confirming_admins), admin.id) != std::end(document.confirming_admins), "Not found admin." );
+      FC_ASSERT( !(std::find(std::begin(document.confirmed_admins), std::end(document.confirmed_admins), admin.id) != std::end(document.confirmed_admins)), "Document is already confirmed." );
+
+//      owner.hold_objects
+
+      document.confirmed_admins.push_back(admin.id);
+
+      document_confirming_operation op;
+      op.document = document.id;
+      op.owner = admin.id;
+      op.confirmed_admins = document.confirmed_admins;
+      op.status = document.confirming_admins.size() == document.confirmed_admins.size() ? document_object_const::document_status_ready : document_object_const::document_status_new;
+
+      signed_transaction tx;
+      tx.operations.push_back( op );
+      set_operation_fees( tx, _remote_db->get_global_properties().parameters.current_fees );
+      tx.validate();
+
+      return sign_transaction( tx, true );
+   }
+
+   signed_transaction document_publishing(object_id_type id, string owner_name)
+   {
+      FC_ASSERT( !is_locked() );
+
+      auto owner = get_account( owner_name );
+
+      auto document = _remote_db->get_document( id, "" );
+      FC_ASSERT( !document.id.is_null(), "Document does not exist." );
+
+      auto institution = get_institution(document.institution, owner.id);
+      FC_ASSERT( owner.id == institution.owner, "Access Denied." );
+
+      FC_ASSERT(document.confirming_admins.size() == document.confirmed_admins.size() && document.status == document_object_const::document_status_ready, "Access Denied." );
+
+      fc::optional<asset_object> asset_obj = get_asset("ENDO");
+      FC_ASSERT(asset_obj, "Could not find asset matching ${asset}", ("asset", "ENDO"));
+
+      document_hold_publishing_operation op;
+      op.document = document.id;
+      op.owner = owner.id;
+      op.status = document_object_const::document_status_published;
+      op.amount = asset_obj->amount(ENDO_DOCUMENT_PUBLISHED_BURN);
+      op.hold_objects = owner.hold_objects;
+
+      signed_transaction tx;
+      tx.operations.push_back( op );
+      set_operation_fees( tx, _remote_db->get_global_properties().parameters.current_fees );
+      tx.validate();
+
+      return sign_transaction( tx, true );
+   }
+
+   signed_transaction document_annuling(object_id_type id, string owner_name)
+   {
+      FC_ASSERT( !is_locked() );
+
+      auto owner = get_account( owner_name );
+
+      auto document = _remote_db->get_document( id, "" );
+      FC_ASSERT( !document.id.is_null(), "Document does not exist." );
+
+      auto institution = get_institution(document.institution, owner.id);
+      FC_ASSERT( owner.id == institution.owner, "Access Denied." );
+
+      FC_ASSERT( document.status == document_object_const::document_status_published, "Access Denied." );
+
+      document_annuling_operation op;
+      op.document = document.id;
+      op.owner = owner.id;
+      op.status = document_object_const::document_status_annul;
+
+      signed_transaction tx;
+      tx.operations.push_back( op );
+      set_operation_fees( tx, _remote_db->get_global_properties().parameters.current_fees );
+      tx.validate();
+
+      return sign_transaction( tx, true );
+   }
+
+   signed_transaction returning_tokens(string owner_name)
+   {
+      FC_ASSERT( !is_locked() );
+
+      auto owner = get_account( owner_name );
+
+      account_returning_holding_tokens_operation op;
+      op.account = owner.id;
+      op.hold_objects = owner.hold_objects;
+
+      signed_transaction tx;
+      tx.operations.push_back( op );
+      set_operation_fees( tx, _remote_db->get_global_properties().parameters.current_fees );
+      tx.validate();
+
+      return sign_transaction( tx, true );
+   }
+
+   signed_transaction holding_tokens(string amount, string owner_name)
+   {
+      FC_ASSERT( !is_locked() );
+
+      auto owner = get_account( owner_name );
+
+      fc::optional<asset_object> asset_obj = get_asset("ENDO");
+      FC_ASSERT(asset_obj, "Could not find asset matching ${asset}", ("asset", "ENDO"));
+
+//      ilog( "EnDo log ${a} ${b} ${c}",
+//            ("a", asset_obj->amount_from_string(amount).amount.value)("b", ENDO_HOLDING_PRICE)("c", asset_obj->amount_from_string(amount).amount.value / ENDO_HOLDING_PRICE) );
+//      FC_ASSERT(false, "Could");
+      account_hold_balance_operation op;
+      op.account = owner.id;
+      op.hold_objects = owner.hold_objects;
+      op.new_hold_object_amount = asset_obj->amount_from_string(amount).amount.value / ENDO_HOLDING_PRICE;
+      op.amount = asset_obj->amount_from_string(amount);
+
+      signed_transaction tx;
+      tx.operations.push_back( op );
+      set_operation_fees( tx, _remote_db->get_global_properties().parameters.current_fees );
+      tx.validate();
+
+      return sign_transaction( tx, true );
+   }
+
+//   pair<public_key_type,string> get_private_key_from_password( string account, string role, string password )const {
+//      auto seed = password + account + role;
+//      FC_ASSERT( seed.size() );
+//      auto secret = fc::sha256::hash( seed.c_str(), seed.size() );
+//      auto priv = fc::ecc::private_key::regenerate( secret );
+//      return std::make_pair( public_key_type( priv.get_public_key() ), key_to_wif( priv ) );
+//   }
+
+
    signed_transaction update_worker_votes(
       string account,
       worker_vote_delta delta,
       bool broadcast
-      )
-   {
+   ) {
       account_object acct = get_account( account );
       account_update_operation op;
 
@@ -2905,14 +3263,6 @@ brain_key_info wallet_api::suggest_brain_key()const
    return result;
 }
 
-pair<public_key_type,string> wallet_api::get_private_key_from_password( string account, string role, string password )const {
-   auto seed = password + account + role;
-   FC_ASSERT( seed.size() );
-   auto secret = fc::sha256::hash( seed.c_str(), seed.size() );
-   auto priv = fc::ecc::private_key::regenerate( secret );
-   return std::make_pair( public_key_type( priv.get_public_key() ), key_to_wif( priv ) );
-}
-
 vector<brain_key_info> wallet_api::derive_owner_keys_from_brain_key(string brain_key, int number_of_desired_keys) const
 {
    return graphene::wallet::utility::derive_owner_keys_from_brain_key(brain_key, number_of_desired_keys);
@@ -3840,6 +4190,10 @@ string wallet_api::get_private_key( public_key_type pubkey )const
    return key_to_wif( my->get_private_key( pubkey ) );
 }
 
+//pair<public_key_type,string> wallet_api::get_private_key_from_password( string account, string role, string password )const {
+//   return my->get_private_key_from_password(account, role, password);
+//}
+
 public_key_type  wallet_api::get_public_key( string label )const
 {
    try { return fc::variant(label).as<public_key_type>(); } catch ( ... ){}
@@ -4354,9 +4708,92 @@ vector<blind_receipt> wallet_api::blind_history( string key_or_account )
    return result;
 }
 
-signed_transaction wallet_api::institution_create( string creator, string name, string short_name, string phone, string address, bool broadcast )
+signed_transaction wallet_api::institution_create( string creator, string short_name, string name, string phone, string address, string customs, vector<string> admins, bool broadcast )
 {
-   return my->institution_create( creator, name, short_name, phone, address, broadcast );
+   return my->institution_create( creator, short_name, name, phone, address, customs, admins, broadcast );
+}
+
+signed_transaction wallet_api::institution_update( string creator, object_id_type id, string short_name, string name, string phone, string address, string customs, vector<string> admins, bool broadcast )
+{
+   return my->institution_update( creator, id, short_name, name, phone, address, customs, admins, broadcast );
+}
+
+signed_transaction wallet_api::document_create(
+       string                   owner_name,
+       time_point_sec           issue_date,
+       time_point_sec           expiry_date,
+       string                   first_name,
+       string                   last_name,
+       string                   middle_name,
+       time_point_sec           birth_date,
+       string                   document_name,
+       string                   phone,
+       string                   email,
+       string                   identity_card_number,
+       string                   identity_card_type_name,
+       institution_id_type      institution_id,
+       string                   text,
+       string                   public_custom,
+       string                   hidden_custom,
+       vector<string>           confirming_admins,
+       string                   private_data,
+       string                   code,
+       bool                     broadcast
+) {
+   return my->document_create(owner_name, issue_date, expiry_date, first_name, last_name, middle_name, birth_date, document_name, phone, email, identity_card_number, identity_card_type_name, institution_id,
+      text, public_custom, hidden_custom, confirming_admins, private_data, code, broadcast);
+}
+
+signed_transaction wallet_api::document_update(
+       object_id_type           id,
+       string                   owner_name,
+       time_point_sec           issue_date,
+       time_point_sec           expiry_date,
+       string                   first_name,
+       string                   last_name,
+       string                   middle_name,
+       time_point_sec           birth_date,
+       string                   document_name,
+       string                   phone,
+       string                   email,
+       string                   identity_card_number,
+       string                   identity_card_type_name,
+       institution_id_type      institution_id,
+       string                   text,
+       string                   public_custom,
+       string                   hidden_custom,
+       vector<string>           confirming_admins,
+       string                   private_data,
+       string                   code,
+       bool                     broadcast
+) {
+  return my->document_update(id, owner_name, issue_date, expiry_date, first_name, last_name, middle_name, birth_date, document_name, phone, email, identity_card_number, identity_card_type_name, institution_id,
+                             text, public_custom, hidden_custom, confirming_admins, private_data, code, broadcast);
+}
+
+signed_transaction wallet_api::document_confirming(object_id_type id, string admin_name)
+{
+   return my->document_confirming(id, admin_name);
+}
+
+signed_transaction wallet_api::document_publishing(object_id_type id, string owner_name)
+{
+   return my->document_publishing(id, owner_name);
+}
+
+signed_transaction wallet_api::document_annuling(object_id_type id, string owner_name)
+{
+   return my->document_annuling(id, owner_name);
+}
+
+signed_transaction wallet_api::returning_tokens(string owner_name)
+{
+   return my->returning_tokens(owner_name);
+}
+
+signed_transaction wallet_api::holding_tokens(string amount, string owner_name)
+{
+   return my->holding_tokens(amount, owner_name);
 }
 
 order_book wallet_api::get_order_book( const string& base, const string& quote, unsigned limit )
