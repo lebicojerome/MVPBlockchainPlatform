@@ -616,6 +616,7 @@ class database_api
 
       vector<optional<document_object>> get_documents()const;
       document_object get_document(const object_id_type id, string code)const;
+      document_object get_document_by_hash(string hash)const;
 
 //    institution_id_type stop  = institution_id_type(),
 //    unsigned limit = 100,
@@ -738,4 +739,5 @@ FC_API(graphene::app::database_api,
 
    (get_documents)
    (get_document)
+   (get_document_by_hash)
 )

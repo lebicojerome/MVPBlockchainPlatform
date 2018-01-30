@@ -16,31 +16,33 @@ namespace graphene { namespace chain {
 
         /// ID of the account which owns this document
         account_id_type          owner;
-
-        time_point_sec           issue_date;
-        time_point_sec           expiry_date;
-
-        string                   first_name;
-        string                   last_name;
-        string                   middle_name;
-
-        time_point_sec           birth_date;
-
-        string                   document_name;
-        string                   phone;
-        string                   email;
-
-        string                   identity_card_number;
-        string                   identity_card_type_name;
-
         institution_id_type      institution;
 
-        string                   text;
+//        time_point_sec           issue_date;
+//        time_point_sec           expiry_date;
 
-        string                   public_custom;
-        string                   hidden_custom;
+//        string                   first_name;
+//        string                   last_name;
+//        string                   middle_name;
 
-        optional<memo_endo>      private_data;
+//        time_point_sec           birth_date;
+
+//        string                   document_name;
+//        string                   phone;
+//        string                   email;
+
+//        string                   identity_card_number;
+//        string                   identity_card_type_name;
+
+//        string                   text;
+
+//        string                   public_custom;
+//        string                   hidden_custom;
+
+        string                   public_hash;
+
+        optional<memo_endo>      admin_private_data;
+        optional<memo_endo>      student_private_data;
 
         vector<account_id_type>  confirming_admins;
         vector<account_id_type>  confirmed_admins;
@@ -78,27 +80,29 @@ namespace graphene { namespace chain {
 
 FC_REFLECT_DERIVED( graphene::chain::document_object, (graphene::db::object),
     (owner)
+    (institution)
     (vote_for)
     (vote_against)
     (total_votes_for)
     (total_votes_against)
-    (issue_date)
-    (expiry_date)
-    (first_name)
-    (last_name)
-    (middle_name)
-    (birth_date)
-    (document_name)
-    (phone)
-    (email)
-    (identity_card_number)
-    (identity_card_type_name)
-    (institution)
-    (text)
-    (public_custom)
-    (hidden_custom)
+//    (issue_date)
+//    (expiry_date)
+//    (first_name)
+//    (last_name)
+//    (middle_name)
+//    (birth_date)
+//    (document_name)
+//    (phone)
+//    (email)
+//    (identity_card_number)
+//    (identity_card_type_name)
+//    (text)
+//    (public_custom)
+//    (hidden_custom)
+    (public_hash)
+    (admin_private_data)
+    (student_private_data)
     (confirming_admins)
     (confirmed_admins)
-    (private_data)
     (status)
 )

@@ -275,7 +275,6 @@ namespace graphene { namespace chain {
 
       asset                         fee;
       account_id_type               account;
-      vector<account_hold_object>   hold_objects;
       uint64_t                      new_hold_object_amount;
       asset                         amount;
 
@@ -286,19 +285,20 @@ namespace graphene { namespace chain {
    struct document_hold_publishing_operation : public base_operation
    {
       struct fee_parameters_type {
-          uint64_t fee = ENDO_DOCUMENT_PUBLISHED_FEE;
+          uint64_t default_publishing_fee = 0;
+          uint64_t hold_publishing_fee = 0;
       };
 
       asset                         fee;
-      account_id_type               owner;
+      account_id_type               account;
       document_id_type              document;
       uint8_t                       status;
       asset                         amount;
-      vector<account_hold_object>   hold_objects;
+      bool                          hold_flag;
 
-
-      account_id_type               fee_payer()const { return owner; }
+      account_id_type               fee_payer()const { return account; }
       void                          validate()const;
+      share_type                    calculate_fee(const fee_parameters_type& )const;
    };
 
    struct account_returning_holding_tokens_operation : public base_operation
@@ -308,7 +308,6 @@ namespace graphene { namespace chain {
 
       asset                         fee;
       account_id_type               account;
-      vector<account_hold_object>   hold_objects;
 
       account_id_type fee_payer()const { return account; }
       void       validate()const;
@@ -347,21 +346,20 @@ FC_REFLECT( graphene::chain::account_transfer_operation, (fee)(account_id)(new_o
 
 FC_REFLECT( graphene::chain::account_hold_object, (publishing_count)(amount)(expired_at) )
 FC_REFLECT( graphene::chain::account_hold_balance_operation::fee_parameters_type, (fee) )
-FC_REFLECT( graphene::chain::account_hold_balance_operation, (fee)(account)(hold_objects)(new_hold_object_amount)(amount) )
+FC_REFLECT( graphene::chain::account_hold_balance_operation, (fee)(account)(new_hold_object_amount)(amount) )
 
-FC_REFLECT( graphene::chain::document_hold_publishing_operation::fee_parameters_type, (fee) )
+FC_REFLECT( graphene::chain::document_hold_publishing_operation::fee_parameters_type, (default_publishing_fee)(hold_publishing_fee) )
 FC_REFLECT( graphene::chain::document_hold_publishing_operation,
    (fee)
-   (owner)
+   (account)
    (document)
    (status)
    (amount)
-   (hold_objects)
+   (hold_flag)
 )
 
 FC_REFLECT( graphene::chain::account_returning_holding_tokens_operation::fee_parameters_type, (fee) )
 FC_REFLECT( graphene::chain::account_returning_holding_tokens_operation,
    (fee)
    (account)
-   (hold_objects)
 )

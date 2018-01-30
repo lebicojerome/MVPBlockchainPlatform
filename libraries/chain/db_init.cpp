@@ -197,7 +197,6 @@ void database::initialize_evaluators()
    register_evaluator<document_create_evaluator>();
    register_evaluator<document_update_evaluator>();
    register_evaluator<document_confirming_evaluator>();
-   register_evaluator<document_publishing_evaluator>();
    register_evaluator<document_annuling_evaluator>();
 
 }

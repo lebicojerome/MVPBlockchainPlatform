@@ -433,6 +433,8 @@ void_result account_upgrade_evaluator::do_apply(const account_upgrade_evaluator:
 
 void_result account_hold_balance_evaluator::do_evaluate(const account_hold_balance_evaluator::operation_type& o)
 { try {
+   database& d = db();
+   account = &d.get(o.account);
    return void_result();
 } FC_CAPTURE_AND_RETHROW( (o) ) }
 
@@ -440,14 +442,13 @@ void_result account_hold_balance_evaluator::do_apply(const account_hold_balance_
 { try {
    database& d = db();
    const time_point_sec now = d.head_block_time();
-      ilog( "EnDo log ${a}",
-            ("a", o.hold_objects) );
+//      ilog( "EnDo log ${a}",
+//            ("a", o.hold_objects) );
 //      FC_ASSERT(false, "Could");
-
    d.adjust_balance( o.account, -o.amount );
-   d.modify(d.get(o.account), [&](account_object& a) {
+   d.modify(*account, [&](account_object& a) {
        vector<account_hold_object> hold_objects;
-       hold_objects = o.hold_objects;
+       hold_objects = a.hold_objects;
        account_hold_object new_hold_obj;
        new_hold_obj.publishing_count = o.new_hold_object_amount;
        new_hold_obj.amount = o.amount;
@@ -463,18 +464,21 @@ void_result account_hold_balance_evaluator::do_apply(const account_hold_balance_
 
 void_result document_hold_publishing_evaluator::do_evaluate(const document_hold_publishing_evaluator::operation_type& o)
 { try {
-
    return void_result();
 } FC_CAPTURE_AND_RETHROW( (o) ) }
-
 
 void_result document_hold_publishing_evaluator::do_apply(const document_hold_publishing_evaluator::operation_type& o)
 { try {
    database& d = db();
    bool hold_flag = false;
-   if(o.hold_objects.size() > 0) {
+   account_object account = d.get(o.account);
+   vector<account_hold_object> hold_objects = account.hold_objects;
+
+   if(hold_objects.size() > 0) {
+
       vector<account_hold_object> new_hold_objects;
-      for( const account_hold_object& hold_object : o.hold_objects ) {
+      for( const account_hold_object& hold_object : hold_objects ) {
+
          auto insert_ho = hold_object;
          if(!hold_flag && insert_ho.publishing_count > 0 && insert_ho.expired_at > d.head_block_time()) {
             hold_flag = true;
@@ -482,51 +486,58 @@ void_result document_hold_publishing_evaluator::do_apply(const document_hold_pub
          }
 
          new_hold_objects.push_back(insert_ho);
+
       }
+
       if(hold_flag) {
-         d.modify( d.get(o.owner), [&](account_object &a) {
+         d.modify( account, [&](account_object &a) {
             a.hold_objects = new_hold_objects;
          });
       }
    }
 
    d.modify( d.get(o.document), [&]( document_object& w ) {
-       w.status = o.status;
+      w.status = o.status;
    });
 
-   if(!hold_flag)
-      d.adjust_balance( o.owner, -o.amount );
+   if(!hold_flag) {
+      d.adjust_balance(o.account, -o.amount);
+      d.adjust_balance(o.account, -asset(ENDO_DOCUMENT_PUBLISHED_FEE));
+   }
+
    return void_result();
 } FC_CAPTURE_AND_RETHROW( (o) ) }
 
 void_result account_returning_holding_tokens_evaluator::do_evaluate(const account_returning_holding_tokens_evaluator::operation_type& o)
 { try {
+   database& d = db();
+   account = &d.get(o.account);
    return void_result();
 } FC_CAPTURE_AND_RETHROW( (o) ) }
 
 void_result account_returning_holding_tokens_evaluator::do_apply(const account_returning_holding_tokens_evaluator::operation_type& o)
 { try {
    database& d = db();
-   bool hold_flag = false;
-   asset returning_count = asset(0);
-   if(o.hold_objects.size() > 0) {
-      vector<account_hold_object> new_hold_objects;
-      for( const account_hold_object& hold_object : o.hold_objects ) {
-         auto insert_ho = hold_object;
-         if(insert_ho.expired_at <= d.head_block_time()) {
-            hold_flag = true;
-            returning_count += insert_ho.amount;
-         } else
-            new_hold_objects.push_back(insert_ho);
 
+   d.modify( *account, [&](account_object &a) {
+      asset returning_count = asset(0);
+      if(a.hold_objects.size() > 0) {
+         vector <account_hold_object> new_hold_objects;
+         for (const account_hold_object &hold_object : a.hold_objects) {
+
+            auto insert_ho = hold_object;
+            if (insert_ho.expired_at <= d.head_block_time())
+               returning_count += insert_ho.amount;
+            else
+               new_hold_objects.push_back(insert_ho);
+
+         }
+
+         a.hold_objects = new_hold_objects;
       }
-      FC_ASSERT( hold_flag );
-      d.modify( d.get(o.account), [&](account_object &a) {
-          a.hold_objects = new_hold_objects;
-      });
-   }
-   FC_ASSERT( returning_count > asset(0) );
-   d.adjust_balance( o.account, returning_count );
+      FC_ASSERT( returning_count > asset(0) );
+      d.adjust_balance( o.account, returning_count );
+   });
    return void_result();
 } FC_CAPTURE_AND_RETHROW( (o) ) }
 

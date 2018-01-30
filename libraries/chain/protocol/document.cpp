@@ -40,12 +40,12 @@ namespace graphene { namespace chain {
         FC_ASSERT(fee.amount >= 0);
     }
 
-    void document_publishing_operation::validate() const
+    void document_annuling_operation::validate() const
     {
         FC_ASSERT(fee.amount >= 0);
     }
 
-    void document_annuling_operation::validate() const
+    void document_hash_update_operation::validate() const
     {
         FC_ASSERT(fee.amount >= 0);
     }

@@ -34,10 +34,10 @@ namespace graphene { namespace chain {
          void_result do_apply( const operation_type& o );
    };
 
-   class document_publishing_evaluator : public evaluator<document_publishing_evaluator>
+   class document_annuling_evaluator : public evaluator<document_annuling_evaluator>
    {
    public:
-         typedef document_publishing_operation operation_type;
+         typedef document_annuling_operation operation_type;
 
          const document_object* _document;
 
@@ -45,10 +45,10 @@ namespace graphene { namespace chain {
          void_result do_apply( const operation_type& o );
    };
 
-   class document_annuling_evaluator : public evaluator<document_annuling_evaluator>
+   class document_hash_update_evaluator : public evaluator<document_hash_update_evaluator>
    {
    public:
-         typedef document_annuling_operation operation_type;
+         typedef document_hash_update_operation operation_type;
 
          const document_object* _document;
 

@@ -104,8 +104,8 @@ namespace graphene { namespace chain {
             document_create_operation,
             document_update_operation,
             document_confirming_operation,
-            document_publishing_operation,
             document_annuling_operation,
+            document_hash_update_operation,
             account_hold_balance_operation,
             account_returning_holding_tokens_operation,
             document_hold_publishing_operation

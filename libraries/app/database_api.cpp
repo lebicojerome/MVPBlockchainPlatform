@@ -162,6 +162,7 @@ class database_api_impl : public std::enable_shared_from_this<database_api_impl>
       // Documents
       vector<optional<document_object>> get_documents()const;
       document_object get_document(const object_id_type id, string code)const;
+      document_object get_document_by_hash(string hash)const;
 
    //private:
       template<typename T>
@@ -2027,7 +2028,24 @@ document_object database_api_impl::get_document(const object_id_type id, string 
     for (auto elem: document_idx) {
         if(elem.id == id) {
             if(code.size())
-                elem.private_data->get_message(code);
+                elem.admin_private_data->get_message(code);
+            return elem;
+        }
+    }
+
+    return document_object();
+}
+
+document_object database_api::get_document_by_hash(string hash)const
+{
+    return my->get_document_by_hash(hash);
+}
+
+document_object database_api_impl::get_document_by_hash(string hash)const
+{
+    const auto& document_idx = _db.get_index_type<document_index>().indices().get<by_id>();
+    for (auto elem: document_idx) {
+        if(elem.public_hash == hash) {
             return elem;
         }
     }

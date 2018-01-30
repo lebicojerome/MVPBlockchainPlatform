@@ -89,8 +89,8 @@ public:
     void_result do_evaluate(const operation_type& o);
     void_result do_apply(const operation_type& o);
 
-    const account_object* owner;
-    const document_object* document;
+//    const account_object* account;
+//    const document_object* document;
 };
 
 class account_returning_holding_tokens_evaluator : public evaluator<account_returning_holding_tokens_evaluator>

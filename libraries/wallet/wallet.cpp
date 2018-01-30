@@ -1604,6 +1604,10 @@ public:
       op.address = address;
       op.customs = customs;
 
+//      account_object from_account = get_account(from);get_private_key(from_account.options.memo_key)
+//      op.code = memo_endo();
+//      op.code->set_message(get_private_key(from_account.options.memo_key), code);
+
       vector< account_id_type > admin_ids;
       for( const string& name : admins )
          admin_ids.push_back( get_account_id(name) );
@@ -1661,55 +1665,56 @@ public:
 
    signed_transaction document_create(
       string                   owner_name,
-      time_point_sec           issue_date,
-      time_point_sec           expiry_date,
-      string                   first_name,
-      string                   last_name,
-      string                   middle_name,
-      time_point_sec           birth_date,
-      string                   document_name,
-      string                   phone,
-      string                   email,
-      string                   identity_card_number,
-      string                   identity_card_type_name,
       institution_id_type      institution_id,
-      string                   text,
-      string                   public_custom,
-      string                   hidden_custom,
+//      time_point_sec           issue_date,
+//      time_point_sec           expiry_date,
+//      string                   first_name,
+//      string                   last_name,
+//      string                   middle_name,
+//      time_point_sec           birth_date,
+//      string                   document_name,
+//      string                   phone,
+//      string                   email,
+//      string                   identity_card_number,
+//      string                   identity_card_type_name,
+//      string                   text,
+//      string                   public_custom,
+//      string                   hidden_custom,
       vector<string>           confirming_admins,
       string                   private_data,
-      string                   code,
+      string                   admin_code,
+      string                   student_code,
       bool                     broadcast
    ) {
       FC_ASSERT( !is_locked() );
 
       auto owner = get_account( owner_name );
+      auto institution = get_institution(institution_id, owner.id);
 
       document_create_operation op;
       op.owner = owner.id;
-
-      auto institution = get_institution(institution_id, owner.id);
-
-      op.issue_date = issue_date;
-      op.expiry_date = expiry_date;
-      op.first_name = first_name;
-      op.last_name = last_name;
-      op.middle_name = middle_name;
-      op.birth_date = birth_date;
-      op.document_name = document_name;
-      op.phone = phone;
-      op.email = email;
-      op.identity_card_number = identity_card_number;
-      op.identity_card_type_name = identity_card_type_name;
       op.institution = institution.id;
-      op.text = text;
-      op.public_custom = public_custom;
-      op.hidden_custom = hidden_custom;
 
-//      if( private_data.size() ) {
-         op.private_data = memo_endo();
-         op.private_data->set_message(code, private_data);
-//      }
+//      op.issue_date = issue_date;
+//      op.expiry_date = expiry_date;
+//      op.first_name = first_name;
+//      op.last_name = last_name;
+//      op.middle_name = middle_name;
+//      op.birth_date = birth_date;
+//      op.document_name = document_name;
+//      op.phone = phone;
+//      op.email = email;
+//      op.identity_card_number = identity_card_number;
+//      op.identity_card_type_name = identity_card_type_name;
+//      op.text = text;
+//      op.public_custom = public_custom;
+//      op.hidden_custom = hidden_custom;
+
+      op.admin_private_data = memo_endo();
+      op.admin_private_data->set_message(admin_code, private_data);
+
+      op.student_private_data = memo_endo();
+      op.student_private_data->set_message(student_code, private_data);
 
       vector<account_id_type> confirming_admins_ids;
       for( const string& name : confirming_admins ) {
@@ -1736,24 +1741,25 @@ public:
    signed_transaction document_update(
       object_id_type           id,
       string                   owner_name,
-      time_point_sec           issue_date,
-      time_point_sec           expiry_date,
-      string                   first_name,
-      string                   last_name,
-      string                   middle_name,
-      time_point_sec           birth_date,
-      string                   document_name,
-      string                   phone,
-      string                   email,
-      string                   identity_card_number,
-      string                   identity_card_type_name,
       institution_id_type      institution_id,
-      string                   text,
-      string                   public_custom,
-      string                   hidden_custom,
+//      time_point_sec           issue_date,
+//      time_point_sec           expiry_date,
+//      string                   first_name,
+//      string                   last_name,
+//      string                   middle_name,
+//      time_point_sec           birth_date,
+//      string                   document_name,
+//      string                   phone,
+//      string                   email,
+//      string                   identity_card_number,
+//      string                   identity_card_type_name,
+//      string                   text,
+//      string                   public_custom,
+//      string                   hidden_custom,
       vector<string>           confirming_admins,
       string                   private_data,
-      string                   code,
+      string                   admin_code,
+      string                   student_code,
       bool                     broadcast
    ) {
       FC_ASSERT( !is_locked() );
@@ -1769,29 +1775,29 @@ public:
 
       document_update_operation op;
       op.document = document.id;
-
-      op.owner = owner.id;
-
-      op.issue_date = issue_date;
-      op.expiry_date = expiry_date;
-      op.first_name = first_name;
-      op.last_name = last_name;
-      op.middle_name = middle_name;
-      op.birth_date = birth_date;
-      op.document_name = document_name;
-      op.phone = phone;
-      op.email = email;
-      op.identity_card_number = identity_card_number;
-      op.identity_card_type_name = identity_card_type_name;
       op.institution = institution.id;
-      op.text = text;
-      op.public_custom = public_custom;
-      op.hidden_custom = hidden_custom;
+//      op.owner = owner.id;
 
-//      if( private_data.size() ) {
-         op.private_data = memo_endo();
-         op.private_data->set_message(code, private_data);
-//      }
+//      op.issue_date = issue_date;
+//      op.expiry_date = expiry_date;
+//      op.first_name = first_name;
+//      op.last_name = last_name;
+//      op.middle_name = middle_name;
+//      op.birth_date = birth_date;
+//      op.document_name = document_name;
+//      op.phone = phone;
+//      op.email = email;
+//      op.identity_card_number = identity_card_number;
+//      op.identity_card_type_name = identity_card_type_name;
+//      op.text = text;
+//      op.public_custom = public_custom;
+//      op.hidden_custom = hidden_custom;
+
+      op.admin_private_data = memo_endo();
+      op.admin_private_data->set_message(admin_code, private_data);
+
+      op.student_private_data = memo_endo();
+      op.student_private_data->set_message(student_code, private_data);
 
       vector<account_id_type> confirming_admins_ids;
       for( const string& name : confirming_admins ) {
@@ -1836,7 +1842,7 @@ public:
 
       document_confirming_operation op;
       op.document = document.id;
-      op.owner = admin.id;
+      op.account = admin.id;
       op.confirmed_admins = document.confirmed_admins;
       op.status = document.confirming_admins.size() == document.confirmed_admins.size() ? document_object_const::document_status_ready : document_object_const::document_status_new;
 
@@ -1865,12 +1871,23 @@ public:
       fc::optional<asset_object> asset_obj = get_asset("ENDO");
       FC_ASSERT(asset_obj, "Could not find asset matching ${asset}", ("asset", "ENDO"));
 
+
+      auto remote_owner = _remote_db->get_account_by_name( owner_name );
+
+//      bool hold_flag = false;
+//      for( const account_hold_object& hold_object : remote_owner.hold_objects ) {
+//         if(hold_object.publishing_count > 0 && hold_object.expired_at > d.head_block_time()) {
+//            hold_flag = true;
+//            break;
+//         }
+//      }
+
       document_hold_publishing_operation op;
       op.document = document.id;
-      op.owner = owner.id;
+      op.account = owner.id;
       op.status = document_object_const::document_status_published;
       op.amount = asset_obj->amount(ENDO_DOCUMENT_PUBLISHED_BURN);
-      op.hold_objects = owner.hold_objects;
+      op.hold_flag = false;
 
       signed_transaction tx;
       tx.operations.push_back( op );
@@ -1896,7 +1913,7 @@ public:
 
       document_annuling_operation op;
       op.document = document.id;
-      op.owner = owner.id;
+      op.account = owner.id;
       op.status = document_object_const::document_status_annul;
 
       signed_transaction tx;
@@ -1915,7 +1932,6 @@ public:
 
       account_returning_holding_tokens_operation op;
       op.account = owner.id;
-      op.hold_objects = owner.hold_objects;
 
       signed_transaction tx;
       tx.operations.push_back( op );
@@ -1934,14 +1950,37 @@ public:
       fc::optional<asset_object> asset_obj = get_asset("ENDO");
       FC_ASSERT(asset_obj, "Could not find asset matching ${asset}", ("asset", "ENDO"));
 
-//      ilog( "EnDo log ${a} ${b} ${c}",
-//            ("a", asset_obj->amount_from_string(amount).amount.value)("b", ENDO_HOLDING_PRICE)("c", asset_obj->amount_from_string(amount).amount.value / ENDO_HOLDING_PRICE) );
-//      FC_ASSERT(false, "Could");
       account_hold_balance_operation op;
       op.account = owner.id;
-      op.hold_objects = owner.hold_objects;
       op.new_hold_object_amount = asset_obj->amount_from_string(amount).amount.value / ENDO_HOLDING_PRICE;
       op.amount = asset_obj->amount_from_string(amount);
+
+      signed_transaction tx;
+      tx.operations.push_back( op );
+      set_operation_fees( tx, _remote_db->get_global_properties().parameters.current_fees );
+      tx.validate();
+
+      return sign_transaction( tx, true );
+   }
+
+   signed_transaction document_hash_update(object_id_type id, string owner_name, string public_hash)
+   {
+      FC_ASSERT( !is_locked() );
+
+      auto owner = get_account( owner_name );
+
+      auto document = _remote_db->get_document( id, "" );
+      FC_ASSERT( !document.id.is_null(), "Document does not exist." );
+
+      auto institution = get_institution(document.institution, owner.id);
+      FC_ASSERT( owner.id == institution.owner, "Access Denied." );
+
+      FC_ASSERT( document.status == document_object_const::document_status_published, "Access Denied." );
+
+      document_hash_update_operation op;
+      op.account = owner.id;
+      op.document = document.id;
+      op.public_hash = public_hash;
 
       signed_transaction tx;
       tx.operations.push_back( op );
@@ -1958,7 +1997,6 @@ public:
 //      auto priv = fc::ecc::private_key::regenerate( secret );
 //      return std::make_pair( public_key_type( priv.get_public_key() ), key_to_wif( priv ) );
 //   }
-
 
    signed_transaction update_worker_votes(
       string account,
@@ -4719,56 +4757,28 @@ signed_transaction wallet_api::institution_update( string creator, object_id_typ
 }
 
 signed_transaction wallet_api::document_create(
-       string                   owner_name,
-       time_point_sec           issue_date,
-       time_point_sec           expiry_date,
-       string                   first_name,
-       string                   last_name,
-       string                   middle_name,
-       time_point_sec           birth_date,
-       string                   document_name,
-       string                   phone,
-       string                   email,
-       string                   identity_card_number,
-       string                   identity_card_type_name,
-       institution_id_type      institution_id,
-       string                   text,
-       string                   public_custom,
-       string                   hidden_custom,
-       vector<string>           confirming_admins,
-       string                   private_data,
-       string                   code,
-       bool                     broadcast
+        string                   owner_name,
+        institution_id_type      institution_id,
+        vector<string>           confirming_admins,
+        string                   private_data,
+        string                   admin_code,
+        string                   student_code,
+        bool                     broadcast
 ) {
-   return my->document_create(owner_name, issue_date, expiry_date, first_name, last_name, middle_name, birth_date, document_name, phone, email, identity_card_number, identity_card_type_name, institution_id,
-      text, public_custom, hidden_custom, confirming_admins, private_data, code, broadcast);
+   return my->document_create(owner_name, institution_id, confirming_admins, private_data, admin_code, student_code, broadcast);
 }
 
 signed_transaction wallet_api::document_update(
-       object_id_type           id,
-       string                   owner_name,
-       time_point_sec           issue_date,
-       time_point_sec           expiry_date,
-       string                   first_name,
-       string                   last_name,
-       string                   middle_name,
-       time_point_sec           birth_date,
-       string                   document_name,
-       string                   phone,
-       string                   email,
-       string                   identity_card_number,
-       string                   identity_card_type_name,
-       institution_id_type      institution_id,
-       string                   text,
-       string                   public_custom,
-       string                   hidden_custom,
-       vector<string>           confirming_admins,
-       string                   private_data,
-       string                   code,
-       bool                     broadcast
+        object_id_type           id,
+        string                   owner_name,
+        institution_id_type      institution_id,
+        vector<string>           confirming_admins,
+        string                   private_data,
+        string                   admin_code,
+        string                   student_code,
+        bool                     broadcast
 ) {
-  return my->document_update(id, owner_name, issue_date, expiry_date, first_name, last_name, middle_name, birth_date, document_name, phone, email, identity_card_number, identity_card_type_name, institution_id,
-                             text, public_custom, hidden_custom, confirming_admins, private_data, code, broadcast);
+  return my->document_update(id, owner_name, institution_id, confirming_admins, private_data, admin_code, student_code, broadcast);
 }
 
 signed_transaction wallet_api::document_confirming(object_id_type id, string admin_name)

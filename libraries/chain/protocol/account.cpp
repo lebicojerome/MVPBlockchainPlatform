@@ -275,7 +275,6 @@ share_type account_upgrade_operation::calculate_fee(const fee_parameters_type& k
    return k.membership_annual_fee;
 }
 
-
 void account_upgrade_operation::validate() const
 {
    FC_ASSERT( fee.amount >= 0 );
@@ -295,12 +294,17 @@ void account_hold_balance_operation::validate()const
 void account_returning_holding_tokens_operation::validate()const
 {
   FC_ASSERT( fee.amount >= 0 );
-  FC_ASSERT( hold_objects.size() > 0 );
+//  FC_ASSERT( hold_objects.size() > 0 );
 }
 
 void document_hold_publishing_operation::validate()const
 {
   FC_ASSERT( fee.amount >= 0 );
+}
+
+share_type document_hold_publishing_operation::calculate_fee( const fee_parameters_type& k )const
+{
+   return hold_flag ? k.hold_publishing_fee : k.default_publishing_fee;
 }
 
 } } // graphene::chain
