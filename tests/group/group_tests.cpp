@@ -25,7 +25,7 @@
 #include <fc/crypto/openssl.hpp>
 #include <openssl/rand.h>
 
-#include <graphene/chain/institution_object.hpp>
+#include <graphene/chain/group_object.hpp>
 #include <graphene/chain/match_object.hpp>
 #include <graphene/chain/game_object.hpp>
 #include "../common/database_fixture.hpp"
@@ -42,15 +42,15 @@ using namespace graphene::chain;
 
 #define RAND_MAX_MIN(MAX, MIN) (std::rand() % ((MAX) - (MIN) + 1) + (MIN))
 
-BOOST_AUTO_TEST_SUITE(institution_tests)
+BOOST_AUTO_TEST_SUITE(group_tests)
 
-// class performing operations necessary for creating institutions,
-// having players join the institutions and playing institutions to completion.
-class institutions_helper
+// class performing operations necessary for creating groups,
+// having players join the groups and playing groups to completion.
+class groups_helper
 {
 public:
 
-    institutions_helper(database_fixture& df) : df(df)
+    groups_helper(database_fixture& df) : df(df)
     {
         assets.insert(asset_id_type());
         current_asset_idx = 0;
@@ -59,9 +59,9 @@ public:
             players.insert(*dividend_account);
     }
 
-    const std::set<institution_id_type>& list_institutions()
+    const std::set<group_id_type>& list_groups()
     {
-        return institutions;
+        return groups;
     }
 
     std::map<account_id_type, std::map<asset_id_type, share_type>> list_players_balances()
@@ -160,7 +160,7 @@ public:
         return result;
     }
 
-//    const institution_id_type create_institution (const account_id_type& creator,
+//    const group_id_type create_group (const account_id_type& creator,
 //                                                const fc::ecc::private_key& sig_priv_key,
 //                                                asset buy_in,
 //                                                uint32_t number_of_players = 2,
@@ -176,16 +176,16 @@ public:
 //                                                fc::optional<flat_set<account_id_type> > whitelist = fc::optional<flat_set<account_id_type> >()
 //                                                )
 //    {
-//        if (current_institution_idx.valid())
-//            current_institution_idx = *current_institution_idx + 1;
+//        if (current_group_idx.valid())
+//            current_group_idx = *current_group_idx + 1;
 //        else
-//            current_institution_idx = 0;
+//            current_group_idx = 0;
 //
 //        graphene::chain::database& db = df.db;
 //        const chain_parameters& params = db.get_global_properties().parameters;
 //        signed_transaction trx;
-//        institution_options options;
-//        institution_create_operation op;
+//        group_options options;
+//        group_create_operation op;
 //        rock_paper_scissors_game_options& game_options = options.game_options.get<rock_paper_scissors_game_options>();
 //
 //        game_options.number_of_gestures = number_of_gestures;
@@ -193,7 +193,7 @@ public:
 //        game_options.time_per_reveal_move = time_per_reveal_move;
 //        game_options.insurance_enabled = insurance_enabled;
 //
-//        options.registration_deadline = db.head_block_time() + fc::seconds(registration_deadline + *current_institution_idx);
+//        options.registration_deadline = db.head_block_time() + fc::seconds(registration_deadline + *current_group_idx);
 //        options.buy_in = buy_in;
 //        options.number_of_players = number_of_players;
 //        if (start_delay)
@@ -215,12 +215,12 @@ public:
 //        df.sign(trx, sig_priv_key);
 //        PUSH_TX(db, trx);
 //
-//        institution_id_type institution_id = institution_id_type(*current_institution_idx);
-//        institutions.insert(institution_id);
-//        return institution_id;
+//        group_id_type group_id = group_id_type(*current_group_idx);
+//        groups.insert(group_id);
+//        return group_id;
 //    }
 //
-//    void join_institution(const institution_id_type & institution_id,
+//    void join_group(const group_id_type & group_id,
 //                         const account_id_type& player_id,
 //                         const account_id_type& payer_id,
 //                         const fc::ecc::private_key& sig_priv_key,
@@ -230,12 +230,12 @@ public:
 //        graphene::chain::database& db = df.db;
 //        const chain_parameters& params = db.get_global_properties().parameters;
 //        signed_transaction tx;
-//        institution_join_operation op;
+//        group_join_operation op;
 //
 //        op.payer_account_id = payer_id;
 //        op.buy_in = buy_in;
 //        op.player_account_id = player_id;
-//        op.institution_id = institution_id;
+//        op.group_id = group_id;
 //        tx.operations = {op};
 //        for( auto& op : tx.operations )
 //            db.current_fee_schedule().set_fee(op);
@@ -248,7 +248,7 @@ public:
 //        players_keys[player_id] = sig_priv_key;
 //   }
 //
-//   void leave_institution(const institution_id_type & institution_id,
+//   void leave_group(const group_id_type & group_id,
 //                         const account_id_type& player_id,
 //                         const account_id_type& canceling_account_id,
 //                         const fc::ecc::private_key& sig_priv_key
@@ -257,11 +257,11 @@ public:
 //       graphene::chain::database& db = df.db;
 //       const chain_parameters& params = db.get_global_properties().parameters;
 //       signed_transaction tx;
-//       institution_leave_operation op;
+//       group_leave_operation op;
 //
 //       op.canceling_account_id = canceling_account_id;
 //       op.player_account_id = player_id;
-//       op.institution_id = institution_id;
+//       op.group_id = group_id;
 //       tx.operations = {op};
 //       for( auto& op : tx.operations )
 //           db.current_fee_schedule().set_fee(op);
@@ -289,8 +289,8 @@ public:
 //       // check whether the gesture is appropriate for the game we're playing
 //       game_object game_obj = game_id(db);
 //       match_object match_obj = game_obj.match_id(db);
-//       institution_object institution_obj = match_obj.institution_id(db);
-//       rock_paper_scissors_game_options game_options = institution_obj.options.game_options.get<rock_paper_scissors_game_options>();
+//       group_object group_obj = match_obj.group_id(db);
+//       rock_paper_scissors_game_options game_options = group_obj.options.game_options.get<rock_paper_scissors_game_options>();
 //       assert((int)gesture < game_options.number_of_gestures);
 //
 //       account_object player_account_obj = player_id(db);
@@ -332,7 +332,7 @@ public:
 //    }
 //
 //    // spaghetti programming
-//    // walking through all institutions, matches and games and throwing random moves
+//    // walking through all groups, matches and games and throwing random moves
 //    // optionaly skip generting randomly selected moves
 //    // every_move_is >= 0 : every game is tie
 //    void play_games(unsigned skip_some_commits = 0, unsigned skip_some_reveals = 0, int every_move_is = -1)
@@ -342,12 +342,12 @@ public:
 //        graphene::chain::database& db = df.db;
 //        const chain_parameters& params = db.get_global_properties().parameters;
 //
-//        for(const auto& institution_id: institutions)
+//        for(const auto& group_id: groups)
 //        {
-//            const institution_object& institution = institution_id(db);
-//            const institution_details_object& institution_details = institution.institution_details_id(db);
-//            rock_paper_scissors_game_options game_options = institution.options.game_options.get<rock_paper_scissors_game_options>();
-//            for(const auto& match_id: institution_details.matches)
+//            const group_object& group = group_id(db);
+//            const group_details_object& group_details = group.group_details_id(db);
+//            rock_paper_scissors_game_options game_options = group.options.game_options.get<rock_paper_scissors_game_options>();
+//            for(const auto& match_id: group_details.matches)
 //            {
 //                const match_object& match = match_id(db);
 //                for(const auto& game_id: match.games )
@@ -427,15 +427,15 @@ public:
 
 private:
     database_fixture& df;
-    // index of last created institution
-    fc::optional<uint64_t> current_institution_idx;
+    // index of last created group
+    fc::optional<uint64_t> current_group_idx;
     // index of last asset
     uint64_t current_asset_idx;
     // assets : core and maybe others
     std::set<asset_id_type> assets;
-    // institutions to be played
-    std::set<institution_id_type> institutions;
-    // all players registered in institutions
+    // groups to be played
+    std::set<group_id_type> groups;
+    // all players registered in groups
     std::set<account_id_type> players;
     // players' private keys
     std::map<account_id_type, fc::ecc::private_key> players_keys;
@@ -457,4 +457,4 @@ private:
 
 /// Expecting assertion
 
-//  creating institution
+//  creating group

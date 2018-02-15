@@ -232,7 +232,9 @@ namespace graphene { namespace chain {
           */
          optional< flat_set<asset_id_type> > allowed_assets;
 
-         vector<account_hold_object>   hold_objects;
+         vector<account_hold_object>         hold_objects;
+
+         vector<application_id_type>         application_ids;
 
          bool has_special_authority()const
          {
@@ -387,6 +389,7 @@ FC_REFLECT_DERIVED( graphene::chain::account_object,
                     (top_n_control_flags)
                     (allowed_assets)
                     (hold_objects)
+                    (application_ids)
                     )
 
 FC_REFLECT_DERIVED( graphene::chain::account_balance_object,

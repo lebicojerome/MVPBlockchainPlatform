@@ -21,31 +21,16 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-#include <graphene/chain/protocol/document.hpp>
+#include <graphene/chain/protocol/group.hpp>
 
 namespace graphene { namespace chain {
 
-    void document_create_operation::validate() const
+    void group_create_operation::validate() const
     {
         FC_ASSERT(fee.amount >= 0);
     }
 
-    void document_update_operation::validate() const
-    {
-        FC_ASSERT(fee.amount >= 0);
-    }
-
-    void document_confirming_operation::validate() const
-    {
-        FC_ASSERT(fee.amount >= 0);
-    }
-
-    void document_annuling_operation::validate() const
-    {
-        FC_ASSERT(fee.amount >= 0);
-    }
-
-    void document_hash_update_operation::validate() const
+    void group_update_operation::validate() const
     {
         FC_ASSERT(fee.amount >= 0);
     }

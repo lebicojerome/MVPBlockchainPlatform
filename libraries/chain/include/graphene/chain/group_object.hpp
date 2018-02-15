@@ -5,32 +5,32 @@
 namespace graphene { namespace chain {
 
     /**
-     * @brief institution object contains the details of a blockchain institution. See @ref institutions for details.
+     * @brief group object contains the details of a blockchain group. See @ref groups for details.
      */
-    class institution_object : public abstract_object<institution_object>
+    class group_object : public abstract_object<group_object>
     {
     public:
         static const uint8_t    space_id = protocol_ids;
-        static const uint8_t    type_id  = institution_object_type;
+        static const uint8_t    type_id  = group_object_type;
 
-        /// ID of the account which owns this institution
+        /// ID of the account which owns this group
         account_id_type         owner;
         /// IDs of the admin accounts
         vector<account_id_type> admins;
-        /// Human-readable name for the institution
+        /// Human-readable name for the group
         string                  name;
-        /// Short name for the institution
+        /// Short name for the group
         string                  short_name;
-        /// Phone of institution
+        /// Phone of group
         string                  phone;
-        /// Address of institution
+        /// Address of group
         string                  address;
-        /// Custom fields of institution
+        /// Custom fields of group
         string                  customs;
 
-        /// Voting ID which represents approval of this institution
+        /// Voting ID which represents approval of this group
         vote_id_type            vote_for;
-        /// Voting ID which represents disapproval of this institution
+        /// Voting ID which represents disapproval of this group
         vote_id_type            vote_against;
 
         uint64_t                total_votes_for = 0;
@@ -44,20 +44,20 @@ namespace graphene { namespace chain {
     struct by_vote_for;
     struct by_vote_against;
     typedef multi_index_container<
-    institution_object,
+    group_object,
     indexed_by<
         ordered_unique< tag<by_id>, member< object, object_id_type, &object::id > >,
-        ordered_unique< tag<by_name>, member<institution_object, string, &institution_object::short_name> >,
-        ordered_unique< tag<by_vote_for>, member< institution_object, vote_id_type, &institution_object::vote_for > >,
-        ordered_unique< tag<by_vote_against>, member< institution_object, vote_id_type, &institution_object::vote_against > >
+        ordered_unique< tag<by_name>, member<group_object, string, &group_object::short_name> >,
+        ordered_unique< tag<by_vote_for>, member< group_object, vote_id_type, &group_object::vote_for > >,
+        ordered_unique< tag<by_vote_against>, member< group_object, vote_id_type, &group_object::vote_against > >
     >
-    > institution_object_multi_index_type;
+    > group_object_multi_index_type;
 
-    using institution_index = generic_index<institution_object, institution_object_multi_index_type>;
+    using group_index = generic_index<group_object, group_object_multi_index_type>;
 
 } } // graphene::chain
 
-FC_REFLECT_DERIVED( graphene::chain::institution_object, (graphene::db::object),
+FC_REFLECT_DERIVED( graphene::chain::group_object, (graphene::db::object),
     (owner)
     (admins)
     (vote_for)

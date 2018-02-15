@@ -38,8 +38,9 @@
 #include <graphene/chain/worker_object.hpp>
 
 // EnDo object
-#include <graphene/chain/institution_object.hpp>
-#include <graphene/chain/document_object.hpp>
+#include <graphene/chain/group_object.hpp>
+#include <graphene/chain/application_object.hpp>
+#include <graphene/chain/information_object.hpp>
 
 #include <fc/crypto/hex.hpp>
 #include <fc/smart_ref_impl.hpp>

@@ -4,22 +4,22 @@
 
 namespace graphene { namespace chain {
 
-    struct document_object_const
+    struct information_object_const
     {
-        enum document_object_statuses
+        enum information_object_statuses
         {
-            document_status_new        = 0x0,
-            document_status_ready      = 0x1,
-            document_status_published  = 0x2,
-            document_status_annul      = 0x3
+            information_status_new        = 0x0,
+            information_status_ready      = 0x1,
+            information_status_published  = 0x2,
+            information_status_annul      = 0x3
         };
     };
 
     /**
-     * @brief Create a new document object
+     * @brief Create a new information object
      * @ingroup operations
      */
-    struct document_create_operation : public base_operation
+    struct information_create_operation : public base_operation
     {
         struct fee_parameters_type {
             uint64_t    fee = GRAPHENE_BLOCKCHAIN_PRECISION / 100;
@@ -28,7 +28,7 @@ namespace graphene { namespace chain {
 
         asset                   fee;
         account_id_type         owner;
-        institution_id_type     institution;
+        group_id_type     group;
 
 //        time_point_sec          issue_date;
 //        time_point_sec          expiry_date;
@@ -39,7 +39,7 @@ namespace graphene { namespace chain {
 
 //        time_point_sec          birth_date;
 
-//        string                  document_name;
+//        string                  information_name;
 //        string                  phone;
 //        string                  email;
 
@@ -51,8 +51,9 @@ namespace graphene { namespace chain {
 //        string                  public_custom;
 //        string                  hidden_custom;
 
-        optional<memo_endo>     admin_private_data;
-        optional<memo_endo>     student_private_data;
+        string                  admin_private_data_hash;
+        string                  student_private_data_hash;
+        string                  custom_data;
 
         vector<account_id_type> confirming_admins;
         vector<account_id_type> confirmed_admins;
@@ -66,10 +67,10 @@ namespace graphene { namespace chain {
     };
 
     /**
-     * @brief Update an existing document
+     * @brief Update an existing information
      * @ingroup operations
      */
-    struct document_update_operation : public base_operation
+    struct information_update_operation : public base_operation
     {
         struct fee_parameters_type {
             uint64_t    fee = GRAPHENE_BLOCKCHAIN_PRECISION / 100;
@@ -78,8 +79,8 @@ namespace graphene { namespace chain {
 
         asset                   fee;
         account_id_type         owner;
-        document_id_type        document;
-        institution_id_type     institution;
+        information_id_type        information;
+        group_id_type     group;
 
 //        time_point_sec          issue_date;
 //        time_point_sec          expiry_date;
@@ -90,7 +91,7 @@ namespace graphene { namespace chain {
 
 //        time_point_sec          birth_date;
 
-//        string                  document_name;
+//        string                  information_name;
 //        string                  phone;
 //        string                  email;
 
@@ -102,8 +103,9 @@ namespace graphene { namespace chain {
 //        string                  public_custom;
 //        string                  hidden_custom;
 
-        optional<memo_endo>     admin_private_data;
-        optional<memo_endo>     student_private_data;
+        string                  admin_private_data_hash;
+        string                  student_private_data_hash;
+        string                  custom_data;
 
         vector<account_id_type> confirming_admins;
         vector<account_id_type> confirmed_admins;
@@ -116,7 +118,7 @@ namespace graphene { namespace chain {
         void                    validate()const;
     };
 
-    struct document_confirming_operation : public base_operation
+    struct information_confirming_operation : public base_operation
     {
         struct fee_parameters_type {
             uint64_t fee = GRAPHENE_BLOCKCHAIN_PRECISION / 100;
@@ -125,7 +127,7 @@ namespace graphene { namespace chain {
         asset                   fee;
         account_id_type         account;
 
-        document_id_type        document;
+        information_id_type        information;
 
         vector<account_id_type> confirmed_admins;
         uint8_t                 status;
@@ -134,7 +136,7 @@ namespace graphene { namespace chain {
         void                    validate()const;
     };
 
-    struct document_annuling_operation : public base_operation
+    struct information_annuling_operation : public base_operation
     {
         struct fee_parameters_type {
             uint64_t fee = GRAPHENE_BLOCKCHAIN_PRECISION / 100;
@@ -142,14 +144,14 @@ namespace graphene { namespace chain {
 
         asset                   fee;
         account_id_type         account;
-        document_id_type        document;
+        information_id_type        information;
         uint8_t                 status;
 
         account_id_type         fee_payer()const { return account; }
         void                    validate()const;
     };
 
-    struct document_hash_update_operation : public base_operation
+    struct information_hash_update_operation : public base_operation
     {
         struct fee_parameters_type {
             uint64_t fee = GRAPHENE_BLOCKCHAIN_PRECISION / 100;
@@ -157,26 +159,41 @@ namespace graphene { namespace chain {
 
         asset                   fee;
         account_id_type         account;
-        document_id_type        document;
+        information_id_type        information;
         string                  public_hash;
+
+        account_id_type         fee_payer()const { return account; }
+        void                    validate()const;
+    };
+
+    struct information_binding_operation : public base_operation
+    {
+        struct fee_parameters_type {
+            uint64_t fee = GRAPHENE_BLOCKCHAIN_PRECISION / 100;
+        };
+
+        asset                   fee;
+        account_id_type         account;
+        account_id_type         student;
+        information_id_type        information;
 
         account_id_type         fee_payer()const { return account; }
         void                    validate()const;
     };
 } }
 
-FC_REFLECT( graphene::chain::document_create_operation::fee_parameters_type, (fee) )
-FC_REFLECT( graphene::chain::document_create_operation,
+FC_REFLECT( graphene::chain::information_create_operation::fee_parameters_type, (fee) )
+FC_REFLECT( graphene::chain::information_create_operation,
     (fee)
     (owner)
-    (institution)
+    (group)
 //    (issue_date)
 //    (expiry_date)
 //    (first_name)
 //    (last_name)
 //    (middle_name)
 //    (birth_date)
-//    (document_name)
+//    (information_name)
 //    (phone)
 //    (email)
 //    (identity_card_number)
@@ -184,27 +201,28 @@ FC_REFLECT( graphene::chain::document_create_operation,
 //    (text)
 //    (public_custom)
 //    (hidden_custom)
-    (admin_private_data)
-    (student_private_data)
+    (admin_private_data_hash)
+    (student_private_data_hash)
+    (custom_data)
     (confirming_admins)
     (confirmed_admins)
 //    (private_data)
     (status)
 )
 
-FC_REFLECT( graphene::chain::document_update_operation::fee_parameters_type, (fee) )
-FC_REFLECT( graphene::chain::document_update_operation,
+FC_REFLECT( graphene::chain::information_update_operation::fee_parameters_type, (fee) )
+FC_REFLECT( graphene::chain::information_update_operation,
     (fee)
     (owner)
-    (document)
-    (institution)
+    (information)
+    (group)
 //    (issue_date)
 //    (expiry_date)
 //    (first_name)
 //    (last_name)
 //    (middle_name)
 //    (birth_date)
-//    (document_name)
+//    (information_name)
 //    (phone)
 //    (email)
 //    (identity_card_number)
@@ -212,35 +230,44 @@ FC_REFLECT( graphene::chain::document_update_operation,
 //    (text)
 //    (public_custom)
 //    (hidden_custom)
-    (admin_private_data)
-    (student_private_data)
+    (admin_private_data_hash)
+    (student_private_data_hash)
+    (custom_data)
     (confirming_admins)
     (confirmed_admins)
 //    (private_data)
     (status)
 )
 
-FC_REFLECT( graphene::chain::document_confirming_operation::fee_parameters_type, (fee) )
-FC_REFLECT( graphene::chain::document_confirming_operation,
+FC_REFLECT( graphene::chain::information_confirming_operation::fee_parameters_type, (fee) )
+FC_REFLECT( graphene::chain::information_confirming_operation,
     (fee)
     (account)
     (confirmed_admins)
-    (document)
+    (information)
     (status)
 )
 
-FC_REFLECT( graphene::chain::document_annuling_operation::fee_parameters_type, (fee) )
-FC_REFLECT( graphene::chain::document_annuling_operation,
+FC_REFLECT( graphene::chain::information_annuling_operation::fee_parameters_type, (fee) )
+FC_REFLECT( graphene::chain::information_annuling_operation,
     (fee)
     (account)
-    (document)
+    (information)
     (status)
 )
 
-FC_REFLECT( graphene::chain::document_hash_update_operation::fee_parameters_type, (fee) )
-FC_REFLECT( graphene::chain::document_hash_update_operation,
+FC_REFLECT( graphene::chain::information_hash_update_operation::fee_parameters_type, (fee) )
+FC_REFLECT( graphene::chain::information_hash_update_operation,
     (fee)
     (account)
-    (document)
+    (information)
     (public_hash)
+)
+
+FC_REFLECT( graphene::chain::information_binding_operation::fee_parameters_type, (fee) )
+FC_REFLECT( graphene::chain::information_binding_operation,
+    (fee)
+    (account)
+    (student)
+    (information)
 )

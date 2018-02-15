@@ -58,8 +58,9 @@ add_library( graphene_chain
              protocol/confidential.cpp
              protocol/vote.cpp
         # EnDo objects
-             protocol/institution.cpp
-             protocol/document.cpp
+             protocol/group.cpp
+             protocol/application.cpp
+             protocol/information.cpp
 
              genesis_state.cpp
              get_config.cpp
@@ -83,8 +84,9 @@ add_library( graphene_chain
              special_authority.cpp
              buyback.cpp
         # EnDo evaluator
-             institution_evaluator.cpp
-             document_evaluator.cpp
+             group_evaluator.cpp
+             application_evaluator.cpp
+             information_evaluator.cpp
 
              account_object.cpp
              asset_object.cpp

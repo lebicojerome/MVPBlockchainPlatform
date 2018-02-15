@@ -36,7 +36,7 @@
 #include <graphene/chain/special_authority_object.hpp>
 #include <graphene/chain/witness_object.hpp>
 #include <graphene/chain/worker_object.hpp>
-#include <graphene/chain/document_object.hpp>
+#include <graphene/chain/information_object.hpp>
 
 #include <algorithm>
 
@@ -209,6 +209,8 @@ object_id_type account_create_evaluator::do_apply( const account_create_operatio
             obj.allowed_assets = o.extensions.value.buyback_options->markets;
             obj.allowed_assets->emplace( o.extensions.value.buyback_options->asset_to_buy );
          }
+
+         obj.application_ids  = o.application_ids;
    });
 
    /*
@@ -462,12 +464,12 @@ void_result account_hold_balance_evaluator::do_apply(const account_hold_balance_
    return void_result();
 } FC_CAPTURE_AND_RETHROW( (o) ) }
 
-void_result document_hold_publishing_evaluator::do_evaluate(const document_hold_publishing_evaluator::operation_type& o)
+void_result information_hold_publishing_evaluator::do_evaluate(const information_hold_publishing_evaluator::operation_type& o)
 { try {
    return void_result();
 } FC_CAPTURE_AND_RETHROW( (o) ) }
 
-void_result document_hold_publishing_evaluator::do_apply(const document_hold_publishing_evaluator::operation_type& o)
+void_result information_hold_publishing_evaluator::do_apply(const information_hold_publishing_evaluator::operation_type& o)
 { try {
    database& d = db();
    bool hold_flag = false;
@@ -496,13 +498,13 @@ void_result document_hold_publishing_evaluator::do_apply(const document_hold_pub
       }
    }
 
-   d.modify( d.get(o.document), [&]( document_object& w ) {
+   d.modify( d.get(o.information), [&]( information_object& w ) {
       w.status = o.status;
    });
 
    if(!hold_flag) {
       d.adjust_balance(o.account, -o.amount);
-      d.adjust_balance(o.account, -asset(ENDO_DOCUMENT_PUBLISHED_FEE));
+      d.adjust_balance(o.account, -asset(ENDO_INFORMATION_PUBLISHED_FEE));
    }
 
    return void_result();

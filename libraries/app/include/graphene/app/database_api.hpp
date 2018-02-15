@@ -42,8 +42,9 @@
 #include <graphene/chain/witness_object.hpp>
 
 // EnDo objects
-#include <graphene/chain/institution_object.hpp>
-#include <graphene/chain/document_object.hpp>
+#include <graphene/chain/group_object.hpp>
+#include <graphene/chain/application_object.hpp>
+#include <graphene/chain/information_object.hpp>
 
 #include <graphene/market_history/market_history_plugin.hpp>
 
@@ -609,18 +610,22 @@ class database_api
        */
       vector<blinded_balance_object> get_blinded_balances( const flat_set<commitment_type>& commitments )const;
 
-//      vector<institution_object> get_institutions();
-      vector<optional<institution_object>> get_institutions()const;
-      institution_object get_institution(const object_id_type id)const;
-      vector<optional<institution_object>> get_institutions_of_account(const vector<object_id_type>& ids, string account_name)const;
+      application_object get_application(const object_id_type id)const;
 
-      vector<optional<document_object>> get_documents()const;
-      document_object get_document(const object_id_type id, string code)const;
-      document_object get_document_by_hash(string hash)const;
+    //      vector<group_object> get_groups();
+      vector<optional<group_object>> get_groups()const;
+      group_object get_group(const object_id_type id)const;
+      vector<optional<group_object>> get_groups_of_account(const vector<object_id_type>& ids, string account_name)const;
 
-//    institution_id_type stop  = institution_id_type(),
+      vector<optional<information_object>> get_informations()const;
+      vector<optional<information_object>> get_informations_of_group(const object_id_type id)const;
+      information_statistics get_information_statistics_of_group(const vector<object_id_type>& ids, string account_name)const;
+      information_object get_information(const object_id_type id)const;
+      information_object get_information_by_hash(string hash)const;
+
+//    group_id_type stop  = group_id_type(),
 //    unsigned limit = 100,
-//            institution_id_type start = institution_id_type()
+//            group_id_type start = group_id_type()
 
    private:
       std::shared_ptr< database_api_impl > my;
@@ -732,12 +737,16 @@ FC_API(graphene::app::database_api,
    // Blinded balances
    (get_blinded_balances)
 
-//   (get_institutions)
-   (get_institutions)
-   (get_institution)
-   (get_institutions_of_account)
+   (get_application)
 
-   (get_documents)
-   (get_document)
-   (get_document_by_hash)
+//   (get_groups)
+   (get_groups)
+   (get_group)
+   (get_groups_of_account)
+
+   (get_informations)
+   (get_informations_of_group)
+   (get_information_statistics_of_group)
+   (get_information)
+   (get_information_by_hash)
 )

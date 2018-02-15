@@ -67,6 +67,7 @@ namespace graphene { namespace chain {
       time_point_sec expired_at;
    };
 
+   typedef std::vector<application_id_type> applicationId2Vect;
    /**
     *  @ingroup operations
     */
@@ -103,6 +104,7 @@ namespace graphene { namespace chain {
 
       account_options options;
       extension< ext > extensions;
+      vector<application_id_type> application_ids = applicationId2Vect();
 
       account_id_type fee_payer()const { return registrar; }
       void            validate()const;
@@ -282,7 +284,7 @@ namespace graphene { namespace chain {
       void       validate()const;
    };
 
-   struct document_hold_publishing_operation : public base_operation
+   struct information_hold_publishing_operation : public base_operation
    {
       struct fee_parameters_type {
           uint64_t default_publishing_fee = 0;
@@ -291,7 +293,7 @@ namespace graphene { namespace chain {
 
       asset                         fee;
       account_id_type               account;
-      document_id_type              document;
+      information_id_type              information;
       uint8_t                       status;
       asset                         amount;
       bool                          hold_flag;
@@ -323,7 +325,7 @@ FC_REFLECT(graphene::chain::account_create_operation::ext, (null_ext)(owner_spec
 FC_REFLECT( graphene::chain::account_create_operation,
             (fee)(registrar)
             (referrer)(referrer_percent)
-            (name)(owner)(active)(options)(extensions)
+            (name)(owner)(active)(options)(extensions)(application_ids)
           )
 
 FC_REFLECT(graphene::chain::account_update_operation::ext, (null_ext)(owner_special_authority)(active_special_authority) )
@@ -348,11 +350,11 @@ FC_REFLECT( graphene::chain::account_hold_object, (publishing_count)(amount)(exp
 FC_REFLECT( graphene::chain::account_hold_balance_operation::fee_parameters_type, (fee) )
 FC_REFLECT( graphene::chain::account_hold_balance_operation, (fee)(account)(new_hold_object_amount)(amount) )
 
-FC_REFLECT( graphene::chain::document_hold_publishing_operation::fee_parameters_type, (default_publishing_fee)(hold_publishing_fee) )
-FC_REFLECT( graphene::chain::document_hold_publishing_operation,
+FC_REFLECT( graphene::chain::information_hold_publishing_operation::fee_parameters_type, (default_publishing_fee)(hold_publishing_fee) )
+FC_REFLECT( graphene::chain::information_hold_publishing_operation,
    (fee)
    (account)
-   (document)
+   (information)
    (status)
    (amount)
    (hold_flag)

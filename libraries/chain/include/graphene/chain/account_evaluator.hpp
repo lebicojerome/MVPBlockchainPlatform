@@ -24,7 +24,7 @@
 #pragma once
 #include <graphene/chain/evaluator.hpp>
 #include <graphene/chain/account_object.hpp>
-#include <graphene/chain/document_object.hpp>
+#include <graphene/chain/information_object.hpp>
 
 namespace graphene { namespace chain {
 
@@ -81,16 +81,16 @@ public:
     const account_object* account;
 };
 
-class document_hold_publishing_evaluator : public evaluator<document_hold_publishing_evaluator>
+class information_hold_publishing_evaluator : public evaluator<information_hold_publishing_evaluator>
 {
 public:
-    typedef document_hold_publishing_operation operation_type;
+    typedef information_hold_publishing_operation operation_type;
 
     void_result do_evaluate(const operation_type& o);
     void_result do_apply(const operation_type& o);
 
 //    const account_object* account;
-//    const document_object* document;
+//    const information_object* information;
 };
 
 class account_returning_holding_tokens_evaluator : public evaluator<account_returning_holding_tokens_evaluator>

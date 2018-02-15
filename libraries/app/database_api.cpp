@@ -24,7 +24,9 @@
 
 #include <graphene/app/database_api.hpp>
 #include <graphene/chain/get_config.hpp>
-#include <graphene/chain/institution_object.hpp>
+#include <graphene/chain/group_object.hpp>
+#include <graphene/chain/application_object.hpp>
+#include <graphene/chain/information_object.hpp>
 #include <graphene/chain/account_object.hpp>
 
 #include <fc/bloom_filter.hpp>
@@ -153,16 +155,21 @@ class database_api_impl : public std::enable_shared_from_this<database_api_impl>
       // Blinded balances
       vector<blinded_balance_object> get_blinded_balances( const flat_set<commitment_type>& commitments )const;
 
-      // Institutions
-//      vector<institution_object> get_institutions(institution_id_type stop, unsigned limit, institution_id_type start); // TODO:: limit
-      vector<optional<institution_object>> get_institutions()const;
-      institution_object get_institution(const object_id_type id)const;
-      vector<optional<institution_object>> get_institutions_of_account(const vector<object_id_type>& ids, string account_name)const;
+      // application
+      application_object get_application(const object_id_type id)const;
 
-      // Documents
-      vector<optional<document_object>> get_documents()const;
-      document_object get_document(const object_id_type id, string code)const;
-      document_object get_document_by_hash(string hash)const;
+      // group
+//      vector<group_object> get_groups(group_id_type stop, unsigned limit, group_id_type start); // TODO:: limit
+      vector<optional<group_object>> get_groups()const;
+      group_object get_group(const object_id_type id)const;
+      vector<optional<group_object>> get_groups_of_account(const vector<object_id_type>& ids, string account_name)const;
+
+      // information
+      vector<optional<information_object>> get_informations()const;
+      vector<optional<information_object>> get_informations_of_group(const object_id_type id)const;
+      information_statistics get_information_statistics_of_group(const vector<object_id_type>& ids, string account_name)const;
+      information_object get_information(const object_id_type id)const;
+      information_object get_information_by_hash(string hash)const;
 
    //private:
       template<typename T>
@@ -1598,7 +1605,7 @@ vector<variant> database_api_impl::lookup_vote_ids( const vector<vote_id_type>& 
    const auto& against_worker_idx = _db.get_index_type<worker_index>().indices().get<by_vote_against>();
 
    // EnDo objects
-   //const auto& institution_idx = _db.get_index_type<institution_index>().indices().get<by_vote_id>();
+   //const auto& group_idx = _db.get_index_type<group_index>().indices().get<by_vote_id>();
 
    vector<variant> result;
    result.reserve( votes.size() );
@@ -1624,8 +1631,8 @@ vector<variant> database_api_impl::lookup_vote_ids( const vector<vote_id_type>& 
                result.emplace_back( variant() );
             break;
          }
-         case vote_id_type::institution:
-         case vote_id_type::document:
+         case vote_id_type::group:
+         case vote_id_type::information:
              return result; // TODO:: upd
          case vote_id_type::worker:
          {
@@ -1938,39 +1945,61 @@ vector<blinded_balance_object> database_api_impl::get_blinded_balances( const fl
 
 //////////////////////////////////////////////////////////////////////
 //                                                                  //
-// Institution methods                                              //
+// application methods                                              //
 //                                                                  //
 //////////////////////////////////////////////////////////////////////
 
-vector<optional<institution_object>> database_api::get_institutions()const
+application_object database_api::get_application(const object_id_type id)const
 {
-    return my->get_institutions();
+    return my->get_application(id);
 }
 
-vector<optional<institution_object>> database_api_impl::get_institutions()const
+application_object database_api_impl::get_application(const object_id_type id)const
 {
-    vector<optional<institution_object>> result;
-    const auto& institution_idx = _db.get_index_type<institution_index>().indices().get<by_name>();
-    for (auto elem: institution_idx) {
+    const auto& group_idx = _db.get_index_type<application_index>().indices().get<by_id>();
+    for (auto elem: group_idx) {
+        if(elem.id == id)
+            return elem;
+    }
+
+    return application_object();
+}
+
+//////////////////////////////////////////////////////////////////////
+//                                                                  //
+// group methods                                                    //
+//                                                                  //
+//////////////////////////////////////////////////////////////////////
+
+vector<optional<group_object>> database_api::get_groups()const
+{
+    return my->get_groups();
+}
+
+vector<optional<group_object>> database_api_impl::get_groups()const
+{
+    vector<optional<group_object>> result;
+    const auto& group_idx = _db.get_index_type<group_index>().indices().get<by_name>();
+    for (auto elem: group_idx) {
         result.push_back( elem );
     }
 
     return result;
 }
 
-vector<optional<institution_object>> database_api::get_institutions_of_account(const vector<object_id_type>& ids, string account_name)const
+vector<optional<group_object>> database_api::get_groups_of_account(const vector<object_id_type>& ids, string account_name)const
 {
-    return my->get_institutions_of_account(ids, account_name);
+    return my->get_groups_of_account(ids, account_name);
 }
 
-vector<optional<institution_object>> database_api_impl::get_institutions_of_account(const vector<object_id_type>& ids, string account_name)const
+vector<optional<group_object>> database_api_impl::get_groups_of_account(const vector<object_id_type>& ids, string account_name)const
 {
-    vector<optional<institution_object>> result;
+    vector<optional<group_object>> result;
     account_object account = get_account_by_name( account_name );
     FC_ASSERT( !account.id.is_null(), "Account does not exist" );
-    const auto& institution_idx = _db.get_index_type<institution_index>().indices().get<by_name>();
-    for (auto elem: institution_idx) {
-        bool exists = sizeof(ids) > 0 ? std::find(std::begin(ids), std::end(ids), elem.id) != std::end(ids) : true;
+    const auto& group_idx = _db.get_index_type<group_index>().indices().get<by_name>();
+    for (auto elem: group_idx) {
+        bool exists = ids.size() > 0 ? std::find(std::begin(ids), std::end(ids), elem.id) != std::end(ids) : true;
         if(exists && (elem.owner == account.id || (std::find(std::begin(elem.admins), std::end(elem.admins), account.id) != std::end(elem.admins)))) {
             result.push_back(elem);
         }
@@ -1979,78 +2008,136 @@ vector<optional<institution_object>> database_api_impl::get_institutions_of_acco
     return result;
 }
 
-institution_object database_api::get_institution(const object_id_type id)const
+group_object database_api::get_group(const object_id_type id)const
 {
-    return my->get_institution(id);
+    return my->get_group(id);
 }
 
-institution_object database_api_impl::get_institution(const object_id_type id)const
+group_object database_api_impl::get_group(const object_id_type id)const
 {
-    const auto& institution_idx = _db.get_index_type<institution_index>().indices().get<by_name>();
-    for (auto elem: institution_idx) {
+    const auto& group_idx = _db.get_index_type<group_index>().indices().get<by_name>();
+    for (auto elem: group_idx) {
         if(elem.id == id)
             return elem;
     }
 
-    return institution_object();
+    return group_object();
 }
 
 //////////////////////////////////////////////////////////////////////
 //                                                                  //
-// Document methods                                                 //
+// information methods                                              //
 //                                                                  //
 //////////////////////////////////////////////////////////////////////
 
-vector<optional<document_object>> database_api::get_documents()const
+vector<optional<information_object>> database_api::get_informations()const // TODO::upd where
 {
-    return my->get_documents();
+    return my->get_informations();
 }
 
-vector<optional<document_object>> database_api_impl::get_documents()const
+vector<optional<information_object>> database_api_impl::get_informations()const
 {
-    vector<optional<document_object>> result;
-    const auto& document_idx = _db.get_index_type<document_index>().indices().get<by_id>();
-    for (auto elem: document_idx) {
+    vector<optional<information_object>> result;
+    const auto& information_idx = _db.get_index_type<information_index>().indices().get<by_id>();
+    for (auto elem: information_idx) {
         result.push_back( elem );
     }
 
     return result;
 }
 
-document_object database_api::get_document(const object_id_type id, string code)const
+vector<optional<information_object>> database_api::get_informations_of_group(const object_id_type id)const
 {
-    return my->get_document(id, code);
+    return my->get_informations_of_group(id);
 }
 
-document_object database_api_impl::get_document(const object_id_type id, string code)const
+vector<optional<information_object>> database_api_impl::get_informations_of_group(const object_id_type id)const
 {
-    const auto& document_idx = _db.get_index_type<document_index>().indices().get<by_id>();
-    for (auto elem: document_idx) {
+    vector<optional<information_object>> result;
+    const auto& information_idx = _db.get_index_type<information_index>().indices().get<by_id>();
+    for (auto elem: information_idx) {
+        if(elem.group == id)
+            result.push_back( elem );
+    }
+
+    return result;
+}
+
+information_statistics database_api::get_information_statistics_of_group(const vector<object_id_type>& ids, string account_name)const
+{
+    return my->get_information_statistics_of_group(ids, account_name);
+}
+
+information_statistics database_api_impl::get_information_statistics_of_group(const vector<object_id_type>& ids, string account_name)const
+{
+    information_statistics result;
+    FC_ASSERT( ids.size() > 0, "IDs > 0");
+
+    account_object account = get_account_by_name( account_name );
+
+    const auto& information_idx = _db.get_index_type<information_index>().indices().get<by_id>();
+    for (auto elem: information_idx) {
+        if(std::find(std::begin(ids), std::end(ids), elem.group) != std::end(ids)) {
+            switch (elem.status) {
+                case information_object_const::information_status_new:
+                    result.information_status_new++;
+                    if( !account.id.is_null() > 0 &&
+                        (std::find(std::begin(elem.confirming_admins), std::end(elem.confirming_admins), account.id) != std::end(elem.confirming_admins)) &&
+                        (!(std::find(std::begin(elem.confirmed_admins), std::end(elem.confirmed_admins), account.id) != std::end(elem.confirmed_admins)))
+                    ) {
+                        result.not_accept_count++;
+                    }
+                    break;
+                case information_object_const::information_status_ready:
+                    result.information_status_ready++;
+                    break;
+                case information_object_const::information_status_published:
+                    result.information_status_published++;
+                    break;
+                case information_object_const::information_status_annul:
+                    result.information_status_annul++;
+                    break;
+            }
+        }
+    }
+
+    return result;
+}
+
+information_object database_api::get_information(const object_id_type id)const
+{
+    return my->get_information(id);
+}
+
+information_object database_api_impl::get_information(const object_id_type id)const
+{
+    const auto& information_idx = _db.get_index_type<information_index>().indices().get<by_id>();
+    for (auto elem: information_idx) {
         if(elem.id == id) {
-            if(code.size())
-                elem.admin_private_data->get_message(code);
+//            if(code.size())
+//                elem.admin_private_data->get_message(code);
             return elem;
         }
     }
 
-    return document_object();
+    return information_object();
 }
 
-document_object database_api::get_document_by_hash(string hash)const
+information_object database_api::get_information_by_hash(string hash)const
 {
-    return my->get_document_by_hash(hash);
+    return my->get_information_by_hash(hash);
 }
 
-document_object database_api_impl::get_document_by_hash(string hash)const
+information_object database_api_impl::get_information_by_hash(string hash)const
 {
-    const auto& document_idx = _db.get_index_type<document_index>().indices().get<by_id>();
-    for (auto elem: document_idx) {
-        if(elem.public_hash == hash) {
+    const auto& information_idx = _db.get_index_type<information_index>().indices().get<by_id>();
+    for (auto elem: information_idx) {
+        if(elem.public_hash == hash || elem.admin_private_data_hash == hash || elem.student_private_data_hash == hash) {
             return elem;
         }
     }
 
-    return document_object();
+    return information_object();
 }
 
 //////////////////////////////////////////////////////////////////////

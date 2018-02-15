@@ -38,8 +38,9 @@
 #include <graphene/chain/worker_evaluator.hpp>
 
 // EnDo evaluators
-#include <graphene/chain/institution_evaluator.hpp>
-#include <graphene/chain/document_evaluator.hpp>
+#include <graphene/chain/group_evaluator.hpp>
+#include <graphene/chain/application_evaluator.hpp>
+#include <graphene/chain/information_evaluator.hpp>
 
 #include <fc/smart_ref_impl.hpp>
 

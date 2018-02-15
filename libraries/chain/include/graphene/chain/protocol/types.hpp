@@ -137,8 +137,9 @@ namespace graphene { namespace chain {
       OBJECT_TYPE_COUNT, ///< Sentry value which contains the number of different object types
 
       // EnDo types
-      institution_object_type,
-      document_object_type
+      group_object_type,
+      application_object_type,
+      information_object_type
    };
 
    enum impl_object_type
@@ -182,8 +183,9 @@ namespace graphene { namespace chain {
    class blinded_balance_object;
 
    // EnDo classes of object
-   class institution_object;
-   class document_object;
+   class group_object;
+   class application_object;
+   class information_object;
 
    typedef object_id< protocol_ids, account_object_type,            account_object>               account_id_type;
    typedef object_id< protocol_ids, asset_object_type,              asset_object>                 asset_id_type;
@@ -201,8 +203,9 @@ namespace graphene { namespace chain {
    typedef object_id< protocol_ids, balance_object_type,            balance_object>               balance_id_type;
 
    // EnDo types of object
-   typedef object_id< protocol_ids, institution_object_type,        institution_object>           institution_id_type;
-   typedef object_id< protocol_ids, document_object_type,           document_object>              document_id_type;
+   typedef object_id< protocol_ids, group_object_type,        group_object>           group_id_type;
+   typedef object_id< protocol_ids, application_object_type,        application_object>           application_id_type;
+   typedef object_id< protocol_ids, information_object_type,           information_object>              information_id_type;
 
         // implementation types
    class global_property_object;
@@ -356,8 +359,9 @@ FC_REFLECT_ENUM( graphene::chain::object_type,
                  (balance_object_type)
                  (OBJECT_TYPE_COUNT)
                  // EnDo types of object
-                 (institution_object_type)
-                 (document_object_type)
+                 (group_object_type)
+                 (application_object_type)
+                 (information_object_type)
                )
 FC_REFLECT_ENUM( graphene::chain::impl_object_type,
                  (impl_global_property_object_type)
@@ -412,8 +416,9 @@ FC_REFLECT_TYPENAME( graphene::chain::fba_accumulator_id_type )
 FC_REFLECT_TYPENAME( graphene::chain::collateral_bid_id_type )
 
 // EnDo id types
-FC_REFLECT_TYPENAME( graphene::chain::institution_id_type )
-FC_REFLECT_TYPENAME( graphene::chain::document_id_type )
+FC_REFLECT_TYPENAME( graphene::chain::group_id_type )
+FC_REFLECT_TYPENAME( graphene::chain::application_id_type )
+FC_REFLECT_TYPENAME( graphene::chain::information_id_type )
 
 FC_REFLECT( graphene::chain::void_t, )
 

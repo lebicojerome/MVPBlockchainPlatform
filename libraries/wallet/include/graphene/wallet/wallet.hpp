@@ -750,6 +750,7 @@ class wallet_api
                                                        string account_name,
                                                        string registrar_account,
                                                        string referrer_account,
+                                                       vector<application_id_type> app_ids,
                                                        bool broadcast = false);
 
       /** Transfer an amount from one account to another.
@@ -826,35 +827,37 @@ class wallet_api
        */
       vector<blind_receipt> blind_history( string key_or_account );
 
-      signed_transaction institution_create( string creator, string short_name, string name, string phone, string address, string customs, vector<string> admins, bool broadcast );
-      signed_transaction institution_update( string creator, object_id_type id, string short_name, string name, string phone, string address, string customs, vector<string> admins, bool broadcast );
+      signed_transaction group_create( string creator, string short_name, string name, string phone, string address, string customs, vector<string> admins, bool broadcast );
+      signed_transaction group_update( string creator, object_id_type id, string short_name, string name, string phone, string address, string customs, vector<string> admins, bool broadcast );
 
-      signed_transaction document_create(
+      signed_transaction information_create(
           string                   owner_name,
-          institution_id_type      institution_id,
+          group_id_type      group_id,
           vector<string>           confirming_admins,
-          string                   private_data,
-          string                   admin_code,
-          string                   student_code,
+          string                   admin_private_data_hash,
+          string                   student_private_data_hash,
+          string                   custom_data,
           bool                     broadcast
       );
 
-      signed_transaction document_update(
+      signed_transaction information_update(
           object_id_type           id,
           string                   owner_name,
-          institution_id_type      institution_id,
+          group_id_type      group_id,
           vector<string>           confirming_admins,
-          string                   private_data,
-          string                   admin_code,
-          string                   student_code,
+          string                   admin_private_data_hash,
+          string                   student_private_data_hash,
+          string                   custom_data,
           bool                     broadcast
       );
 
-      signed_transaction document_confirming(object_id_type id, string admin_name);
-      signed_transaction document_publishing(object_id_type id, string owner_name);
-      signed_transaction document_annuling(object_id_type id, string owner_name);
+      signed_transaction information_confirming(object_id_type id, string admin_name);
+      signed_transaction information_publishing(object_id_type id, string owner_name);
+      signed_transaction information_annuling(object_id_type id, string owner_name);
+      signed_transaction information_binding(object_id_type id, string owner_name, string student_name);
       signed_transaction returning_tokens(string owner_name);
       signed_transaction holding_tokens(string amount, string owner_name);
+      signed_transaction information_hash_update(object_id_type id, string owner_name, string public_hash);
 
       /**
        *  Given a confirmation receipt, this method will parse it for a blinded balance and confirm
@@ -1767,14 +1770,16 @@ FC_API( graphene::wallet::wallet_api,
         (receive_blind_transfer)
         (get_order_book)
 
-        (institution_create)
-        (institution_update)
+        (group_create)
+        (group_update)
 
-        (document_create)
-        (document_update)
-        (document_confirming)
-        (document_publishing)
-        (document_annuling)
+        (information_create)
+        (information_update)
+        (information_confirming)
+        (information_publishing)
+        (information_annuling)
+        (information_binding)
         (returning_tokens)
         (holding_tokens)
+        (information_hash_update)
       )

@@ -48,8 +48,9 @@
 #include <graphene/chain/worker_object.hpp>
 
 // EnDo objects
-#include <graphene/chain/institution_object.hpp>
-#include <graphene/chain/document_object.hpp>
+#include <graphene/chain/group_object.hpp>
+#include <graphene/chain/application_object.hpp>
+#include <graphene/chain/information_object.hpp>
 
 #include <graphene/chain/account_evaluator.hpp>
 #include <graphene/chain/asset_evaluator.hpp>
@@ -67,8 +68,9 @@
 #include <graphene/chain/worker_evaluator.hpp>
 
 // EnDo evaluators
-#include <graphene/chain/institution_evaluator.hpp>
-#include <graphene/chain/document_evaluator.hpp>
+#include <graphene/chain/group_evaluator.hpp>
+#include <graphene/chain/application_evaluator.hpp>
+#include <graphene/chain/information_evaluator.hpp>
 
 #include <graphene/chain/protocol/fee_schedule.hpp>
 
@@ -135,11 +137,14 @@ const uint8_t worker_object::space_id;
 const uint8_t worker_object::type_id;
 
 // EnDo const
-const uint8_t institution_object::space_id;
-const uint8_t institution_object::type_id;
+const uint8_t group_object::space_id;
+const uint8_t group_object::type_id;
 
-const uint8_t document_object::space_id;
-const uint8_t document_object::type_id;
+const uint8_t application_object::space_id;
+const uint8_t application_object::type_id;
+
+const uint8_t information_object::space_id;
+const uint8_t information_object::type_id;
 
 
 void database::initialize_evaluators()
@@ -151,7 +156,7 @@ void database::initialize_evaluators()
    register_evaluator<account_whitelist_evaluator>();
    register_evaluator<account_hold_balance_evaluator>();
    register_evaluator<account_returning_holding_tokens_evaluator>();
-   register_evaluator<document_hold_publishing_evaluator>();
+   register_evaluator<information_hold_publishing_evaluator>();
    register_evaluator<committee_member_create_evaluator>();
    register_evaluator<committee_member_update_evaluator>();
    register_evaluator<committee_member_update_global_parameters_evaluator>();
@@ -192,12 +197,17 @@ void database::initialize_evaluators()
    register_evaluator<asset_claim_fees_evaluator>();
 
    // EnDo register evaluators
-   register_evaluator<institution_create_evaluator>();
-   register_evaluator<institution_update_evaluator>();
-   register_evaluator<document_create_evaluator>();
-   register_evaluator<document_update_evaluator>();
-   register_evaluator<document_confirming_evaluator>();
-   register_evaluator<document_annuling_evaluator>();
+   register_evaluator<group_create_evaluator>();
+   register_evaluator<group_update_evaluator>();
+   register_evaluator<application_create_evaluator>();
+   register_evaluator<application_update_evaluator>();
+   register_evaluator<information_create_evaluator>();
+   register_evaluator<information_update_evaluator>();
+   register_evaluator<information_confirming_evaluator>();
+   register_evaluator<information_annuling_evaluator>();
+   register_evaluator<information_hash_update_evaluator>();
+   register_evaluator<information_binding_evaluator>();
+
 
 }
 
@@ -229,8 +239,9 @@ void database::initialize_indexes()
    add_index< primary_index<blinded_balance_index> >();
 
    // EnDo indexes
-   add_index< primary_index<institution_index> >();
-   add_index< primary_index<document_index> >();
+   add_index< primary_index<group_index> >();
+   add_index< primary_index<application_index> >();
+   add_index< primary_index<information_index> >();
 
    //Implementation object indexes
    add_index< primary_index<transaction_index                             > >();
