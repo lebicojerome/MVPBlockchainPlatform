@@ -15,6 +15,11 @@ namespace graphene { namespace chain {
         };
     };
 
+    struct information_relation {
+        application_id_type application_id;
+        information_id_type information_id;
+    };
+
     /**
      * @brief Create a new information object
      * @ingroup operations
@@ -28,28 +33,7 @@ namespace graphene { namespace chain {
 
         asset                   fee;
         account_id_type         owner;
-        group_id_type     group;
-
-//        time_point_sec          issue_date;
-//        time_point_sec          expiry_date;
-
-//        string                  first_name;
-//        string                  last_name;
-//        string                  middle_name;
-
-//        time_point_sec          birth_date;
-
-//        string                  information_name;
-//        string                  phone;
-//        string                  email;
-
-//        string                  identity_card_number;
-//        string                  identity_card_type_name;
-
-//        string                  text;
-
-//        string                  public_custom;
-//        string                  hidden_custom;
+        group_id_type           group;
 
         string                  admin_private_data_hash;
         string                  student_private_data_hash;
@@ -58,7 +42,7 @@ namespace graphene { namespace chain {
         vector<account_id_type> confirming_admins;
         vector<account_id_type> confirmed_admins;
 
-//        optional<memo_endo>     private_data;
+        vector<information_relation>  parent_information_relations;
 
         uint8_t                 status;
 
@@ -82,27 +66,6 @@ namespace graphene { namespace chain {
         information_id_type        information;
         group_id_type     group;
 
-//        time_point_sec          issue_date;
-//        time_point_sec          expiry_date;
-
-//        string                  first_name;
-//        string                  last_name;
-//        string                  middle_name;
-
-//        time_point_sec          birth_date;
-
-//        string                  information_name;
-//        string                  phone;
-//        string                  email;
-
-//        string                  identity_card_number;
-//        string                  identity_card_type_name;
-
-//        string                  text;
-
-//        string                  public_custom;
-//        string                  hidden_custom;
-
         string                  admin_private_data_hash;
         string                  student_private_data_hash;
         string                  custom_data;
@@ -110,7 +73,7 @@ namespace graphene { namespace chain {
         vector<account_id_type> confirming_admins;
         vector<account_id_type> confirmed_admins;
 
-//        optional<memo_endo>     private_data;
+        vector<information_relation>  parent_information_relations;
 
         uint8_t                 status;
 
@@ -182,31 +145,22 @@ namespace graphene { namespace chain {
     };
 } }
 
+FC_REFLECT( graphene::chain::information_relation,
+    (application_id)
+    (information_id)
+)
+
 FC_REFLECT( graphene::chain::information_create_operation::fee_parameters_type, (fee) )
 FC_REFLECT( graphene::chain::information_create_operation,
     (fee)
     (owner)
     (group)
-//    (issue_date)
-//    (expiry_date)
-//    (first_name)
-//    (last_name)
-//    (middle_name)
-//    (birth_date)
-//    (information_name)
-//    (phone)
-//    (email)
-//    (identity_card_number)
-//    (identity_card_type_name)
-//    (text)
-//    (public_custom)
-//    (hidden_custom)
     (admin_private_data_hash)
     (student_private_data_hash)
     (custom_data)
     (confirming_admins)
     (confirmed_admins)
-//    (private_data)
+    (parent_information_relations)
     (status)
 )
 
@@ -216,26 +170,12 @@ FC_REFLECT( graphene::chain::information_update_operation,
     (owner)
     (information)
     (group)
-//    (issue_date)
-//    (expiry_date)
-//    (first_name)
-//    (last_name)
-//    (middle_name)
-//    (birth_date)
-//    (information_name)
-//    (phone)
-//    (email)
-//    (identity_card_number)
-//    (identity_card_type_name)
-//    (text)
-//    (public_custom)
-//    (hidden_custom)
     (admin_private_data_hash)
     (student_private_data_hash)
     (custom_data)
     (confirming_admins)
     (confirmed_admins)
-//    (private_data)
+    (parent_information_relations)
     (status)
 )
 

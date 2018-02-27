@@ -1591,7 +1591,6 @@ public:
       string short_name,
       string name,
       string customs,
-      vector<string> admins,
       bool broadcast
    ) {
       FC_ASSERT( !is_locked() );
@@ -1601,12 +1600,6 @@ public:
       op.name = name;
       op.short_name = short_name;
       op.customs = customs;
-
-      vector< account_id_type > admin_ids;
-      for( const string& name : admins )
-         admin_ids.push_back( get_account_id(name) );
-
-      op.admins = admin_ids;
 
       signed_transaction tx;
       tx.operations.push_back( op );
@@ -1622,7 +1615,6 @@ public:
       string short_name,
       string name,
       string customs,
-      vector<string> admins,
       bool broadcast
    ) {
       FC_ASSERT( !is_locked() );
@@ -1639,12 +1631,6 @@ public:
       op.short_name = short_name;
       op.customs = customs;
 
-      vector< account_id_type > admin_ids;
-      for( const string& name : admins )
-         admin_ids.push_back( get_account_id(name) );
-
-      op.admins = admin_ids;
-
       signed_transaction tx;
       tx.operations.push_back( op );
       set_operation_fees( tx, _remote_db->get_global_properties().parameters.current_fees );
@@ -1656,30 +1642,30 @@ public:
    // groups
 
    signed_transaction group_create(
-      string creator,
-      string short_name,
-      string name,
-      string phone,
-      string address,
-      string customs,
-      vector<string> admins,
+      string                  creator,
+      string                  short_name,
+      string                  name,
+      string                  customs,
+      vector<account_id_type> admins,
+      application_id_type     application_id,
       bool broadcast
    ) {
       FC_ASSERT( !is_locked() );
+
+      auto application = _remote_db->get_application( application_id );
+      FC_ASSERT( !application.id.is_null(), "application does not exist." );
 
       group_create_operation op;
       op.owner = get_account( creator ).id;
       op.name = name;
       op.short_name = short_name;
-      op.phone = phone;
-      op.address = address;
       op.customs = customs;
+      op.application = application.id;
 
-      vector< account_id_type > admin_ids;
-      for( const string& name : admins )
-         admin_ids.push_back( get_account_id(name) );
+      for( const account_id_type& account_id : admins )
+         get_account(account_id);
 
-      op.admins = admin_ids;
+      op.admins = admins;
 
       signed_transaction tx;
       tx.operations.push_back( op );
@@ -1690,14 +1676,12 @@ public:
    }
 
    signed_transaction group_update(
-      string creator,
-      object_id_type id,
-      string short_name,
-      string name,
-      string phone,
-      string address,
-      string customs,
-      vector<string> admins,
+      string                  creator,
+      object_id_type          id,
+      string                  short_name,
+      string                  name,
+      string                  customs,
+      vector<account_id_type> admins,
       bool broadcast
    ) {
       FC_ASSERT( !is_locked() );
@@ -1712,15 +1696,12 @@ public:
       op.owner = group.owner;
       op.name = name;
       op.short_name = short_name;
-      op.phone = phone;
-      op.address = address;
       op.customs = customs;
 
-      vector< account_id_type > admin_ids;
-      for( const string& name : admins )
-         admin_ids.push_back( get_account_id(name) );
+      for( const account_id_type& account_id : admins )
+         get_account(account_id);
 
-      op.admins = admin_ids;
+      op.admins = admins;
 
       signed_transaction tx;
       tx.operations.push_back( op );
@@ -1730,14 +1711,17 @@ public:
       return sign_transaction( tx, broadcast );
    }
 
+   // informations
+
    signed_transaction information_create(
-      string             owner_name,
-      group_id_type      group_id,
-      vector<string>     confirming_admins,
-      string             admin_private_data_hash,
-      string             student_private_data_hash,
-      string             custom_data,
-      bool               broadcast
+      string                        owner_name,
+      group_id_type                 group_id,
+      vector<account_id_type>       confirming_admins_ids,
+      string                        admin_private_data_hash,
+      string                        student_private_data_hash,
+      string                        custom_data,
+      vector<information_relation>  parent_information_relations,
+      bool                          broadcast
    ) {
       FC_ASSERT( !is_locked() );
       FC_ASSERT( admin_private_data_hash != student_private_data_hash );
@@ -1758,17 +1742,27 @@ public:
       op.student_private_data_hash = student_private_data_hash;
       op.custom_data = custom_data;
 
-      vector<account_id_type> confirming_admins_ids;
-      for( const string& name : confirming_admins ) {
-         auto account_id = get_account_id(name);
+      for( const account_id_type& account_id : confirming_admins_ids )
          FC_ASSERT( (std::find(std::begin(group.admins), std::end(group.admins), account_id) != std::end(group.admins)) || account_id == group.owner, "Not found admin." );
-         confirming_admins_ids.push_back(account_id);
-      }
 
       op.confirming_admins = confirming_admins_ids;
 
       vector<account_id_type> confirmed_admins_ids;
       op.confirmed_admins = confirmed_admins_ids;
+
+      for( const information_relation& relation : parent_information_relations ) {
+         auto application_relation = _remote_db->get_application( relation.application_id );
+         FC_ASSERT( !application_relation.id.is_null(), "application does not exist." );
+
+         auto information = _remote_db->get_information( relation.information_id );
+         FC_ASSERT( !information.id.is_null(), "information does not exist." );
+         FC_ASSERT( information.status == information_object_const::information_status_published, "Access Denied." );
+         auto group_relation = _remote_db->get_group( information.group );
+         FC_ASSERT( !group_relation.id.is_null(), "group does not exist." );
+         FC_ASSERT( group_relation.application == application_relation.id );
+      }
+
+      op.parent_information_relations = parent_information_relations;
 
       op.status = confirming_admins_ids.size() > 0 ? information_object_const::information_status_new : information_object_const::information_status_ready;
 
@@ -1781,14 +1775,15 @@ public:
    }
 
    signed_transaction information_update(
-      object_id_type     id,
-      string             owner_name,
-      group_id_type      group_id,
-      vector<string>     confirming_admins,
-      string             admin_private_data_hash,
-      string             student_private_data_hash,
-      string             custom_data,
-      bool               broadcast
+      object_id_type                id,
+      string                        owner_name,
+      group_id_type                 group_id,
+      vector<account_id_type>       confirming_admins_ids,
+      string                        admin_private_data_hash,
+      string                        student_private_data_hash,
+      string                        custom_data,
+      vector<information_relation>  parent_information_relations,
+      bool                          broadcast
    ) {
       FC_ASSERT( !is_locked() );
       FC_ASSERT( admin_private_data_hash != student_private_data_hash );
@@ -1815,17 +1810,27 @@ public:
       op.student_private_data_hash = student_private_data_hash;
       op.custom_data = custom_data;
 
-      vector<account_id_type> confirming_admins_ids;
-      for( const string& name : confirming_admins ) {
-         auto account_id = get_account_id(name);
+      for( const account_id_type& account_id : confirming_admins_ids )
          FC_ASSERT( (std::find(std::begin(group.admins), std::end(group.admins), account_id) != std::end(group.admins)) || account_id == group.owner, "Not found admin." );
-         confirming_admins_ids.push_back(account_id);
-      }
 
       op.confirming_admins = confirming_admins_ids;
 
       vector<account_id_type> confirmed_admins_ids;
       op.confirmed_admins = confirmed_admins_ids;
+
+      for( const information_relation& relation : parent_information_relations ) {
+         auto application_relation = _remote_db->get_application( relation.application_id );
+         FC_ASSERT( !application_relation.id.is_null(), "application does not exist." );
+
+         auto information_relation = _remote_db->get_information( relation.information_id );
+         FC_ASSERT( !information_relation.id.is_null(), "information does not exist." );
+         FC_ASSERT( information_relation.status == information_object_const::information_status_published, "Access Denied." );
+         auto group_relation = _remote_db->get_group( information_relation.group );
+         FC_ASSERT( !group_relation.id.is_null(), "group does not exist." );
+         FC_ASSERT( group_relation.application == application_relation.id );
+      }
+
+      op.parent_information_relations = parent_information_relations;
 
       op.status = confirming_admins_ids.size() > 0 ? information_object_const::information_status_new : information_object_const::information_status_ready;
 
@@ -1886,7 +1891,6 @@ public:
 
       fc::optional<asset_object> asset_obj = get_asset("ENDO");
       FC_ASSERT(asset_obj, "Could not find asset matching ${asset}", ("asset", "ENDO"));
-
 
       auto remote_owner = _remote_db->get_account_by_name( owner_name );
 
@@ -4786,39 +4790,62 @@ vector<blind_receipt> wallet_api::blind_history( string key_or_account )
    return result;
 }
 
-signed_transaction wallet_api::group_create( string creator, string short_name, string name, string phone, string address, string customs, vector<string> admins, bool broadcast )
-{
-   return my->group_create( creator, short_name, name, phone, address, customs, admins, broadcast );
+signed_transaction wallet_api::application_create(
+    string creator,
+    string short_name,
+    string name,
+    string customs,
+    bool broadcast
+) {
+   return my->application_create( creator, short_name, name, customs, broadcast );
 }
 
-signed_transaction wallet_api::group_update( string creator, object_id_type id, string short_name, string name, string phone, string address, string customs, vector<string> admins, bool broadcast )
+signed_transaction wallet_api::application_update(
+    string creator,
+    object_id_type id,
+    string short_name,
+    string name,
+    string customs,
+    bool broadcast
+) {
+   return my->application_update( creator, id, short_name, name, customs, broadcast );
+}
+
+signed_transaction wallet_api::group_create( string creator, string short_name, string name, string customs, vector<account_id_type> admins, application_id_type application_id, bool broadcast )
 {
-   return my->group_update( creator, id, short_name, name, phone, address, customs, admins, broadcast );
+   return my->group_create( creator, short_name, name, customs, admins, application_id, broadcast );
+}
+
+signed_transaction wallet_api::group_update( string creator, object_id_type id, string short_name, string name, string customs, vector<account_id_type> admins, bool broadcast )
+{
+   return my->group_update( creator, id, short_name, name, customs, admins, broadcast );
 }
 
 signed_transaction wallet_api::information_create(
-        string                   owner_name,
-        group_id_type      group_id,
-        vector<string>           confirming_admins,
-        string                   admin_private_data_hash,
-        string                   student_private_data_hash,
-        string                   custom_data,
-        bool                     broadcast
+     string                         owner_name,
+     group_id_type                  group_id,
+     vector<account_id_type>        confirming_admins_ids,
+     string                         admin_private_data_hash,
+     string                         student_private_data_hash,
+     string                         custom_data,
+     vector<information_relation>   parent_information_relations,
+     bool                           broadcast
 ) {
-   return my->information_create(owner_name, group_id, confirming_admins, admin_private_data_hash, student_private_data_hash, custom_data, broadcast);
+   return my->information_create(owner_name, group_id, confirming_admins_ids, admin_private_data_hash, student_private_data_hash, custom_data, parent_information_relations, broadcast);
 }
 
 signed_transaction wallet_api::information_update(
-        object_id_type           id,
-        string                   owner_name,
-        group_id_type      group_id,
-        vector<string>           confirming_admins,
-        string                   admin_private_data_hash,
-        string                   student_private_data_hash,
-        string                   custom_data,
-        bool                     broadcast
+     object_id_type                 id,
+     string                         owner_name,
+     group_id_type                  group_id,
+     vector<account_id_type>        confirming_admins_ids,
+     string                         admin_private_data_hash,
+     string                         student_private_data_hash,
+     string                         custom_data,
+     vector<information_relation>   parent_information_relations,
+     bool                           broadcast
 ) {
-  return my->information_update(id, owner_name, group_id, confirming_admins, admin_private_data_hash, student_private_data_hash, custom_data, broadcast);
+  return my->information_update(id, owner_name, group_id, confirming_admins_ids, admin_private_data_hash, student_private_data_hash, custom_data, parent_information_relations, broadcast);
 }
 
 signed_transaction wallet_api::information_confirming(object_id_type id, string admin_name)

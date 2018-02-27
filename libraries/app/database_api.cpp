@@ -156,17 +156,18 @@ class database_api_impl : public std::enable_shared_from_this<database_api_impl>
       vector<blinded_balance_object> get_blinded_balances( const flat_set<commitment_type>& commitments )const;
 
       // application
+      vector<optional<application_object>> get_applications()const;
       application_object get_application(const object_id_type id)const;
 
       // group
-//      vector<group_object> get_groups(group_id_type stop, unsigned limit, group_id_type start); // TODO:: limit
-      vector<optional<group_object>> get_groups()const;
+      // vector<group_object> get_groups(group_id_type stop, unsigned limit, group_id_type start); // TODO:: limit
+      vector<optional<group_object>> get_groups(const object_id_type app_id)const;
       group_object get_group(const object_id_type id)const;
       vector<optional<group_object>> get_groups_of_account(const vector<object_id_type>& ids, string account_name)const;
 
       // information
-      vector<optional<information_object>> get_informations()const;
-      vector<optional<information_object>> get_informations_of_group(const object_id_type id)const;
+      vector<optional<information_object>> get_informations(const object_id_type group_id)const;
+      //vector<optional<information_object>> get_informations_of_group(const object_id_type id)const;
       information_statistics get_information_statistics_of_group(const vector<object_id_type>& ids, string account_name)const;
       information_object get_information(const object_id_type id)const;
       information_object get_information_by_hash(string hash)const;
@@ -1631,6 +1632,7 @@ vector<variant> database_api_impl::lookup_vote_ids( const vector<vote_id_type>& 
                result.emplace_back( variant() );
             break;
          }
+         case vote_id_type::application:
          case vote_id_type::group:
          case vote_id_type::information:
              return result; // TODO:: upd
@@ -1949,6 +1951,22 @@ vector<blinded_balance_object> database_api_impl::get_blinded_balances( const fl
 //                                                                  //
 //////////////////////////////////////////////////////////////////////
 
+vector<optional<application_object>> database_api::get_applications()const
+{
+    return my->get_applications();
+}
+
+vector<optional<application_object>> database_api_impl::get_applications()const
+{
+    vector<optional<application_object>> result;
+    const auto& application_idx = _db.get_index_type<application_index>().indices().get<by_id>();
+    for (auto elem: application_idx) {
+        result.push_back( elem );
+    }
+
+    return result;
+}
+
 application_object database_api::get_application(const object_id_type id)const
 {
     return my->get_application(id);
@@ -1956,8 +1974,8 @@ application_object database_api::get_application(const object_id_type id)const
 
 application_object database_api_impl::get_application(const object_id_type id)const
 {
-    const auto& group_idx = _db.get_index_type<application_index>().indices().get<by_id>();
-    for (auto elem: group_idx) {
+    const auto& application_idx = _db.get_index_type<application_index>().indices().get<by_id>();
+    for (auto elem: application_idx) {
         if(elem.id == id)
             return elem;
     }
@@ -1971,17 +1989,18 @@ application_object database_api_impl::get_application(const object_id_type id)co
 //                                                                  //
 //////////////////////////////////////////////////////////////////////
 
-vector<optional<group_object>> database_api::get_groups()const
+vector<optional<group_object>> database_api::get_groups(const object_id_type app_id)const
 {
-    return my->get_groups();
+    return my->get_groups(app_id);
 }
 
-vector<optional<group_object>> database_api_impl::get_groups()const
+vector<optional<group_object>> database_api_impl::get_groups(const object_id_type app_id)const
 {
     vector<optional<group_object>> result;
     const auto& group_idx = _db.get_index_type<group_index>().indices().get<by_name>();
     for (auto elem: group_idx) {
-        result.push_back( elem );
+        if(elem.application == app_id)
+            result.push_back( elem );
     }
 
     return result;
@@ -2030,38 +2049,39 @@ group_object database_api_impl::get_group(const object_id_type id)const
 //                                                                  //
 //////////////////////////////////////////////////////////////////////
 
-vector<optional<information_object>> database_api::get_informations()const // TODO::upd where
+vector<optional<information_object>> database_api::get_informations(const object_id_type group_id)const // TODO::upd where
 {
-    return my->get_informations();
+    return my->get_informations(group_id);
 }
 
-vector<optional<information_object>> database_api_impl::get_informations()const
+vector<optional<information_object>> database_api_impl::get_informations(const object_id_type group_id)const
 {
     vector<optional<information_object>> result;
     const auto& information_idx = _db.get_index_type<information_index>().indices().get<by_id>();
     for (auto elem: information_idx) {
-        result.push_back( elem );
-    }
-
-    return result;
-}
-
-vector<optional<information_object>> database_api::get_informations_of_group(const object_id_type id)const
-{
-    return my->get_informations_of_group(id);
-}
-
-vector<optional<information_object>> database_api_impl::get_informations_of_group(const object_id_type id)const
-{
-    vector<optional<information_object>> result;
-    const auto& information_idx = _db.get_index_type<information_index>().indices().get<by_id>();
-    for (auto elem: information_idx) {
-        if(elem.group == id)
+        if(elem.group == group_id)
             result.push_back( elem );
     }
 
     return result;
 }
+
+//vector<optional<information_object>> database_api::get_informations_of_group(const object_id_type id)const
+//{
+//    return my->get_informations_of_group(id);
+//}
+//
+//vector<optional<information_object>> database_api_impl::get_informations_of_group(const object_id_type id)const
+//{
+//    vector<optional<information_object>> result;
+//    const auto& information_idx = _db.get_index_type<information_index>().indices().get<by_id>();
+//    for (auto elem: information_idx) {
+//        if(elem.group == id)
+//            result.push_back( elem );
+//    }
+//
+//    return result;
+//}
 
 information_statistics database_api::get_information_statistics_of_group(const vector<object_id_type>& ids, string account_name)const
 {

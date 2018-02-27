@@ -203,9 +203,9 @@ namespace graphene { namespace chain {
    typedef object_id< protocol_ids, balance_object_type,            balance_object>               balance_id_type;
 
    // EnDo types of object
-   typedef object_id< protocol_ids, group_object_type,        group_object>           group_id_type;
+   typedef object_id< protocol_ids, group_object_type,              group_object>                 group_id_type;
    typedef object_id< protocol_ids, application_object_type,        application_object>           application_id_type;
-   typedef object_id< protocol_ids, information_object_type,           information_object>              information_id_type;
+   typedef object_id< protocol_ids, information_object_type,        information_object>           information_id_type;
 
         // implementation types
    class global_property_object;

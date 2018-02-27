@@ -19,55 +19,32 @@ namespace graphene { namespace chain {
     class information_object : public abstract_object<information_object>
     {
     public:
-        static const uint8_t     space_id = protocol_ids;
-        static const uint8_t     type_id  = information_object_type;
+        static const uint8_t            space_id = protocol_ids;
+        static const uint8_t            type_id  = information_object_type;
 
         /// ID of the account which owns this information
-        account_id_type          owner;
-        group_id_type            group;
+        account_id_type                 owner;
+        group_id_type                   group;
 
-//        time_point_sec           issue_date;
-//        time_point_sec           expiry_date;
+        string                          admin_private_data_hash;
+        string                          student_private_data_hash;
+        string                          public_hash;
+        string                          custom_data;
 
-//        string                   first_name;
-//        string                   last_name;
-//        string                   middle_name;
+        vector<account_id_type>         confirming_admins;
+        vector<account_id_type>         confirmed_admins;
+        account_id_type                 student_owner;
+        vector<information_relation>    parent_information_relations;
 
-//        time_point_sec           birth_date;
-
-//        string                   information_name;
-//        string                   phone;
-//        string                   email;
-
-//        string                   identity_card_number;
-//        string                   identity_card_type_name;
-
-//        string                   text;
-
-//        string                   public_custom;
-//        string                   hidden_custom;
-
-        string                   admin_private_data_hash;
-        string                   student_private_data_hash;
-        string                   public_hash;
-        string                   custom_data;
-
-//        optional<memo_endo>      admin_private_data;
-//        optional<memo_endo>      student_private_data;
-
-        vector<account_id_type>  confirming_admins;
-        vector<account_id_type>  confirmed_admins;
-        account_id_type          student_owner;
-
-        uint8_t                  status;
+        uint8_t                         status;
 
         /// Voting ID which represents approval of this information
-        vote_id_type             vote_for;
+        vote_id_type                    vote_for;
         /// Voting ID which represents disapproval of this information
-        vote_id_type             vote_against;
+        vote_id_type                    vote_against;
 
-        uint64_t                 total_votes_for = 0;
-        uint64_t                 total_votes_against = 0;
+        uint64_t                        total_votes_for = 0;
+        uint64_t                        total_votes_against = 0;
 
         share_type approving_stake()const {
             return int64_t( total_votes_for ) - int64_t( total_votes_against );
@@ -105,20 +82,7 @@ FC_REFLECT_DERIVED( graphene::chain::information_object, (graphene::db::object),
     (vote_against)
     (total_votes_for)
     (total_votes_against)
-//    (issue_date)
-//    (expiry_date)
-//    (first_name)
-//    (last_name)
-//    (middle_name)
-//    (birth_date)
-//    (information_name)
-//    (phone)
-//    (email)
-//    (identity_card_number)
-//    (identity_card_type_name)
-//    (text)
-//    (public_custom)
-//    (hidden_custom)
+    (status)
     (admin_private_data_hash)
     (student_private_data_hash)
     (public_hash)
@@ -126,5 +90,5 @@ FC_REFLECT_DERIVED( graphene::chain::information_object, (graphene::db::object),
     (confirming_admins)
     (confirmed_admins)
     (student_owner)
-    (status)
+    (parent_information_relations)
 )

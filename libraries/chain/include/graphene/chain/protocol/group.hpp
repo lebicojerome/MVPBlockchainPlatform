@@ -18,10 +18,9 @@ namespace graphene { namespace chain {
 
         string                      name;
         string                      short_name;
-        string                      phone;
-        string                      address;
         string                      customs;
         vector<account_id_type>     admins;
+        application_id_type         application;
 
         account_id_type   fee_payer()const { return owner; }
         void              validate()const;
@@ -42,12 +41,10 @@ namespace graphene { namespace chain {
 
         string                      name;
         string                      short_name;
-        string                      phone;
-        string                      address;
         string                      customs;
         vector<account_id_type>     admins;
 
-        group_id_type         group;
+        group_id_type               group;
 
         account_id_type   fee_payer()const { return owner; }
         void              validate()const;
@@ -60,10 +57,9 @@ FC_REFLECT( graphene::chain::group_create_operation,
     (owner)
     (name)
     (short_name)
-    (phone)
-    (address)
     (customs)
     (admins)
+    (application)
 )
 
 FC_REFLECT( graphene::chain::group_update_operation::fee_parameters_type, (fee) )
@@ -72,9 +68,7 @@ FC_REFLECT( graphene::chain::group_update_operation,
     (owner)
     (name)
     (short_name)
-    (phone)
-    (address)
     (customs)
-    (group)
     (admins)
+    (group)
 )

@@ -19,7 +19,6 @@ namespace graphene { namespace chain {
         string                      name;
         string                      short_name;
         string                      customs;
-        vector<account_id_type>     admins;
 
         account_id_type   fee_payer()const { return owner; }
         void              validate()const;
@@ -41,7 +40,6 @@ namespace graphene { namespace chain {
         string                      name;
         string                      short_name;
         string                      customs;
-        vector<account_id_type>     admins;
 
         application_id_type         application;
 
@@ -57,7 +55,6 @@ FC_REFLECT( graphene::chain::application_create_operation,
     (name)
     (short_name)
     (customs)
-    (admins)
 )
 
 FC_REFLECT( graphene::chain::application_update_operation::fee_parameters_type, (fee) )
@@ -68,5 +65,4 @@ FC_REFLECT( graphene::chain::application_update_operation,
     (short_name)
     (customs)
     (application)
-    (admins)
 )

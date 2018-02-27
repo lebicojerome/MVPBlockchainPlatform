@@ -28,7 +28,6 @@ namespace graphene { namespace chain {
          w.name = o.name;
          w.short_name = o.short_name;
          w.customs = o.customs;
-         w.admins = o.admins;
          w.vote_for = for_id;
          w.vote_against = against_id;
       }).id;
@@ -54,7 +53,6 @@ namespace graphene { namespace chain {
          w.name = o.name;
          w.short_name = o.short_name;
          w.customs = o.customs;
-         w.admins = o.admins;
          w.vote_for = for_id; // TODO:: what is?
          w.vote_against = against_id; // TODO:: what is?
       });

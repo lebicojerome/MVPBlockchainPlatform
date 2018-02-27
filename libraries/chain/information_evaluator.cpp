@@ -32,6 +32,7 @@ namespace graphene { namespace chain {
          w.admin_private_data_hash = o.admin_private_data_hash;
          w.student_private_data_hash = o.student_private_data_hash;
          w.custom_data = o.custom_data;
+         w.parent_information_relations = o.parent_information_relations;
          w.vote_for = for_id;
          w.vote_against = against_id;
       }).id;
@@ -59,6 +60,7 @@ namespace graphene { namespace chain {
           w.admin_private_data_hash = o.admin_private_data_hash;
           w.student_private_data_hash = o.student_private_data_hash;
           w.custom_data = o.custom_data;
+          w.parent_information_relations = o.parent_information_relations;
 //          w.vote_for = for_id; // TODO:: what is?
 //          w.vote_against = against_id; // TODO:: what is?
       });

@@ -15,8 +15,6 @@ namespace graphene { namespace chain {
 
         /// ID of the account which owns this application
         account_id_type         owner;
-        /// IDs of the admin accounts
-        vector<account_id_type> admins;
         /// Human-readable name for the application
         string                  name;
         /// Short name for the application
@@ -55,7 +53,6 @@ namespace graphene { namespace chain {
 
 FC_REFLECT_DERIVED( graphene::chain::application_object, (graphene::db::object),
     (owner)
-    (admins)
     (vote_for)
     (vote_against)
     (total_votes_for)

@@ -827,28 +827,32 @@ class wallet_api
        */
       vector<blind_receipt> blind_history( string key_or_account );
 
-      signed_transaction group_create( string creator, string short_name, string name, string phone, string address, string customs, vector<string> admins, bool broadcast );
-      signed_transaction group_update( string creator, object_id_type id, string short_name, string name, string phone, string address, string customs, vector<string> admins, bool broadcast );
+      signed_transaction application_create( string creator, string short_name, string name, string customs, bool broadcast );
+      signed_transaction application_update( string creator, object_id_type id, string short_name, string name, string customs, bool broadcast );
+      signed_transaction group_create( string creator, string short_name, string name, string customs, vector<account_id_type> admins, application_id_type application_id, bool broadcast );
+      signed_transaction group_update( string creator, object_id_type id, string short_name, string name, string customs, vector<account_id_type> admins, bool broadcast );
 
       signed_transaction information_create(
-          string                   owner_name,
-          group_id_type      group_id,
-          vector<string>           confirming_admins,
-          string                   admin_private_data_hash,
-          string                   student_private_data_hash,
-          string                   custom_data,
-          bool                     broadcast
+          string                        owner_name,
+          group_id_type                 group_id,
+          vector<account_id_type>       confirming_admins_ids,
+          string                        admin_private_data_hash,
+          string                        student_private_data_hash,
+          string                        custom_data,
+          vector<information_relation>  parent_information_relations,
+          bool                          broadcast
       );
 
       signed_transaction information_update(
-          object_id_type           id,
-          string                   owner_name,
-          group_id_type      group_id,
-          vector<string>           confirming_admins,
-          string                   admin_private_data_hash,
-          string                   student_private_data_hash,
-          string                   custom_data,
-          bool                     broadcast
+          object_id_type                id,
+          string                        owner_name,
+          group_id_type                 group_id,
+          vector<account_id_type>       confirming_admins_ids,
+          string                        admin_private_data_hash,
+          string                        student_private_data_hash,
+          string                        custom_data,
+          vector<information_relation>  parent_information_relations,
+          bool                          broadcast
       );
 
       signed_transaction information_confirming(object_id_type id, string admin_name);
@@ -1769,6 +1773,9 @@ FC_API( graphene::wallet::wallet_api,
         (blind_history)
         (receive_blind_transfer)
         (get_order_book)
+
+        (application_create)
+        (application_update)
 
         (group_create)
         (group_update)

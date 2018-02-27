@@ -21,12 +21,10 @@ namespace graphene { namespace chain {
         string                  name;
         /// Short name for the group
         string                  short_name;
-        /// Phone of group
-        string                  phone;
-        /// Address of group
-        string                  address;
         /// Custom fields of group
         string                  customs;
+        /// ID of application
+        application_id_type     application;
 
         /// Voting ID which represents approval of this group
         vote_id_type            vote_for;
@@ -66,7 +64,6 @@ FC_REFLECT_DERIVED( graphene::chain::group_object, (graphene::db::object),
     (total_votes_against)
     (name)
     (short_name)
-    (phone)
-    (address)
     (customs)
+    (application)
 )

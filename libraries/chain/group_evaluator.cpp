@@ -27,10 +27,9 @@ namespace graphene { namespace chain {
          w.owner = o.owner;
          w.name = o.name;
          w.short_name = o.short_name;
-         w.phone = o.phone;
-         w.address = o.address;
          w.customs = o.customs;
          w.admins = o.admins;
+         w.application = o.application;
          w.vote_for = for_id;
          w.vote_against = against_id;
       }).id;
@@ -55,8 +54,6 @@ namespace graphene { namespace chain {
          w.owner = o.owner;
          w.name = o.name;
          w.short_name = o.short_name;
-         w.phone = o.phone;
-         w.address = o.address;
          w.customs = o.customs;
          w.admins = o.admins;
          w.vote_for = for_id; // TODO:: what is?

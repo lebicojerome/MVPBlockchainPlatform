@@ -610,15 +610,16 @@ class database_api
        */
       vector<blinded_balance_object> get_blinded_balances( const flat_set<commitment_type>& commitments )const;
 
+      vector<optional<application_object>> get_applications()const;
       application_object get_application(const object_id_type id)const;
 
     //      vector<group_object> get_groups();
-      vector<optional<group_object>> get_groups()const;
+      vector<optional<group_object>> get_groups(const object_id_type app_id)const;
       group_object get_group(const object_id_type id)const;
       vector<optional<group_object>> get_groups_of_account(const vector<object_id_type>& ids, string account_name)const;
 
-      vector<optional<information_object>> get_informations()const;
-      vector<optional<information_object>> get_informations_of_group(const object_id_type id)const;
+      vector<optional<information_object>> get_informations(const object_id_type group_id)const;
+      //vector<optional<information_object>> get_informations_of_group(const object_id_type id)const;
       information_statistics get_information_statistics_of_group(const vector<object_id_type>& ids, string account_name)const;
       information_object get_information(const object_id_type id)const;
       information_object get_information_by_hash(string hash)const;
@@ -737,6 +738,7 @@ FC_API(graphene::app::database_api,
    // Blinded balances
    (get_blinded_balances)
 
+   (get_applications)
    (get_application)
 
 //   (get_groups)
@@ -745,7 +747,7 @@ FC_API(graphene::app::database_api,
    (get_groups_of_account)
 
    (get_informations)
-   (get_informations_of_group)
+   //(get_informations_of_group)
    (get_information_statistics_of_group)
    (get_information)
    (get_information_by_hash)
